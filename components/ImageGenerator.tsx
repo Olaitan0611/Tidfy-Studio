@@ -1,9 +1,18 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Spinner from './Spinner';
 import { generateImage, ImageGenerationOptions } from '../services/geminiService';
-import { SparklesIcon, ExclamationTriangleIcon, PhotoIcon } from '@heroicons/react/24/outline';
+import { SparklesIcon, ExclamationTriangleIcon, PhotoIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { ImageAspectRatio, IMAGE_ASPECT_RATIOS } from '../types';
+
+interface ImageHistoryItem {
+  imageUrl: string;
+  prompt: string;
+  negativePrompt: string;
+  aspectRatio: ImageAspectRatio;
+}
+
+const LOCAL_STORAGE_KEY = 'tidfy-image-history';
 
 const ImageGenerator: React.FC = () => {
     const [prompt, setPrompt] = useState<string>('');
@@ -12,6 +21,18 @@ const ImageGenerator: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [history, setHistory] = useState<ImageHistoryItem[]>([]);
+
+    useEffect(() => {
+        try {
+            const savedHistory = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (savedHistory) {
+                setHistory(JSON.parse(savedHistory));
+            }
+        } catch (error) {
+            console.error("Failed to load image history from localStorage", error);
+        }
+    }, []);
 
     const handleGenerate = async () => {
         if (!prompt.trim()) {
@@ -25,10 +46,38 @@ const ImageGenerator: React.FC = () => {
             const options: ImageGenerationOptions = { prompt, negativePrompt, aspectRatio };
             const url = await generateImage(options);
             setImageUrl(url);
+            setHistory(prevHistory => {
+                const newHistoryItem = { imageUrl: url, prompt, negativePrompt, aspectRatio };
+                const newHistory = [newHistoryItem, ...prevHistory];
+                const limitedHistory = newHistory.slice(0, 20); // Keep latest 20 items
+                try {
+                    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(limitedHistory));
+                } catch (e) {
+                    console.error("Could not save history to localStorage", e);
+                }
+                return limitedHistory;
+            });
         } catch (err: any) {
             setError(err.message || 'An unknown error occurred while generating the image.');
         } finally {
             setIsLoading(false);
+        }
+    };
+    
+    const handleHistoryClick = (item: ImageHistoryItem) => {
+        if (isLoading) return;
+        setImageUrl(item.imageUrl);
+        setPrompt(item.prompt);
+        setNegativePrompt(item.negativePrompt);
+        setAspectRatio(item.aspectRatio);
+    };
+
+    const handleClearHistory = () => {
+        setHistory([]);
+        try {
+            localStorage.removeItem(LOCAL_STORAGE_KEY);
+        } catch (e) {
+            console.error("Could not clear history from localStorage", e);
         }
     };
 
@@ -43,7 +92,7 @@ const ImageGenerator: React.FC = () => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
             {/* Left Panel: Controls */}
-            <div className="space-y-6">
+            <div className="space-y-6 flex flex-col">
                 <div>
                     <label htmlFor="prompt" className="block text-sm font-medium text-gray-300 mb-2">Prompt</label>
                     <textarea
@@ -93,6 +142,47 @@ const ImageGenerator: React.FC = () => {
                         <span>{error}</span>
                     </div>
                 )}
+                
+                <div className="flex-grow"></div>
+                {/* History Section */}
+                <div className="pt-4 border-t border-white/10">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-semibold text-gray-200">Generation History</h3>
+                        {history.length > 0 && (
+                            <button
+                                onClick={handleClearHistory}
+                                className="text-gray-400 hover:text-white transition-colors flex items-center text-sm"
+                                title="Clear history"
+                                disabled={isLoading}
+                            >
+                                <TrashIcon className="w-4 h-4 mr-1.5" />
+                                Clear
+                            </button>
+                        )}
+                    </div>
+                    {history.length > 0 ? (
+                        <div className="max-h-48 overflow-y-auto pr-2 grid grid-cols-4 gap-3">
+                            {history.map((item, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => handleHistoryClick(item)}
+                                    className="relative aspect-square rounded-md overflow-hidden group focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500 disabled:cursor-not-allowed"
+                                    disabled={isLoading}
+                                    title={`Prompt: ${item.prompt}`}
+                                >
+                                    <img src={item.imageUrl} alt={`History item ${index + 1}`} className="w-full h-full object-cover" />
+                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity flex items-center justify-center p-1">
+                                        <p className="text-white text-xs text-center font-semibold">Reuse</p>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center text-sm text-gray-500 py-4 px-2 bg-gray-800/50 rounded-lg">
+                            <p>Your previous generations will appear here.</p>
+                        </div>
+                    )}
+                </div>
             </div>
             
             {/* Right Panel: Output */}

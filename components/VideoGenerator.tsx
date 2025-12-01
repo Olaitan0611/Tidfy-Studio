@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import ApiKeySelector from './ApiKeySelector';
 import Spinner from './Spinner';
 import { generateVideo, VideoGenerationOptions } from '../services/geminiService';
-import { SparklesIcon, ExclamationTriangleIcon, VideoCameraIcon } from '@heroicons/react/24/outline';
+import { SparklesIcon, ExclamationTriangleIcon, VideoCameraIcon, ArrowDownTrayIcon, SpeakerWaveIcon, SpeakerXMarkIcon, ArrowPathIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { VideoAspectRatio, VideoResolution, VIDEO_ASPECT_RATIOS, VIDEO_RESOLUTIONS } from '../types';
 
 const loadingMessages = [
@@ -15,6 +15,17 @@ const loadingMessages = [
     "The AI is painting with light and motion...",
 ];
 
+const playbackSpeeds = [0.5, 1, 1.5, 2];
+
+interface VideoHistoryItem {
+  videoUrl: string;
+  prompt: string;
+  aspectRatio: VideoAspectRatio;
+  resolution: VideoResolution;
+}
+
+const LOCAL_STORAGE_KEY = 'tidfy-video-history';
+
 const VideoGenerator: React.FC = () => {
     const [apiKeySelected, setApiKeySelected] = useState<boolean | null>(null);
     const [prompt, setPrompt] = useState<string>('');
@@ -24,8 +35,13 @@ const VideoGenerator: React.FC = () => {
     const [videoUrl, setVideoUrl] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [currentMessage, setCurrentMessage] = useState<string>(loadingMessages[0]);
+    const [playbackRate, setPlaybackRate] = useState<number>(1);
+    const [isLooping, setIsLooping] = useState<boolean>(true);
+    const [isMuted, setIsMuted] = useState<boolean>(false);
+    const [history, setHistory] = useState<VideoHistoryItem[]>([]);
 
     const messageInterval = useRef<number | null>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
         const checkApiKey = async () => {
@@ -37,6 +53,15 @@ const VideoGenerator: React.FC = () => {
             }
         };
         checkApiKey();
+
+        try {
+            const savedHistory = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (savedHistory) {
+                setHistory(JSON.parse(savedHistory));
+            }
+        } catch (error) {
+            console.error("Failed to load video history from localStorage", error);
+        }
     }, []);
 
     useEffect(() => {
@@ -59,6 +84,14 @@ const VideoGenerator: React.FC = () => {
             }
         };
     }, [isLoading]);
+    
+    useEffect(() => {
+        if (videoRef.current) {
+            videoRef.current.playbackRate = playbackRate;
+            videoRef.current.loop = isLooping;
+            videoRef.current.muted = isMuted;
+        }
+    }, [playbackRate, isLooping, isMuted, videoUrl]);
 
 
     const handleGenerate = async () => {
@@ -69,10 +102,26 @@ const VideoGenerator: React.FC = () => {
         setIsLoading(true);
         setError(null);
         setVideoUrl(null);
+        setPlaybackRate(1);
         try {
             const options: VideoGenerationOptions = { prompt, aspectRatio, resolution };
             const url = await generateVideo(options);
             setVideoUrl(url);
+
+            setHistory(prevHistory => {
+                const newHistoryItem = { videoUrl: url, prompt, aspectRatio, resolution };
+                const newHistory = [newHistoryItem, ...prevHistory];
+                const limitedHistory = newHistory.slice(0, 5); // Videos are large, limit to 5
+                try {
+                    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(limitedHistory));
+                } catch (e) {
+                    console.error("Could not save video history to localStorage", e);
+                    if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+                        setError("Could not save to history: storage is full. Please clear history.");
+                    }
+                }
+                return limitedHistory;
+            });
         } catch (err: any) {
             console.error(err);
             const errorMessage = err.message || 'An unknown error occurred.';
@@ -85,6 +134,35 @@ const VideoGenerator: React.FC = () => {
             setIsLoading(false);
         }
     };
+    
+    const handleDownload = () => {
+        if (!videoUrl) return;
+        const link = document.createElement('a');
+        link.href = videoUrl;
+        const filename = `${prompt.slice(0, 30).replace(/\s+/g, '_') || 'tidfy_video'}.mp4`;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const handleHistoryClick = (item: VideoHistoryItem) => {
+        if (isLoading) return;
+        setVideoUrl(item.videoUrl);
+        setPrompt(item.prompt);
+        setAspectRatio(item.aspectRatio);
+        setResolution(item.resolution);
+    };
+
+    const handleClearHistory = () => {
+        setHistory([]);
+        try {
+            localStorage.removeItem(LOCAL_STORAGE_KEY);
+        } catch (e) {
+            console.error("Could not clear video history from localStorage", e);
+        }
+    };
+
 
     if (apiKeySelected === null) {
         return <div className="flex justify-center items-center h-64"><Spinner className="w-12 h-12" /></div>;
@@ -140,7 +218,7 @@ const VideoGenerator: React.FC = () => {
                         </select>
                     </div>
                 </div>
-                <div className="flex-grow"></div>
+                
                 <button
                     onClick={handleGenerate}
                     disabled={isLoading}
@@ -155,20 +233,127 @@ const VideoGenerator: React.FC = () => {
                     <span>{error}</span>
                 </div>
                 )}
+                <div className="flex-grow"></div>
+                {/* History Section */}
+                <div className="pt-4 border-t border-white/10">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-semibold text-gray-200">Generation History</h3>
+                        {history.length > 0 && (
+                            <button
+                                onClick={handleClearHistory}
+                                className="text-gray-400 hover:text-white transition-colors flex items-center text-sm"
+                                title="Clear history"
+                                disabled={isLoading}
+                            >
+                                <TrashIcon className="w-4 h-4 mr-1.5" />
+                                Clear
+                            </button>
+                        )}
+                    </div>
+                    {history.length > 0 ? (
+                        <div className="max-h-48 overflow-y-auto pr-2 grid grid-cols-3 gap-3">
+                            {history.map((item, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => handleHistoryClick(item)}
+                                    className="relative aspect-video rounded-md overflow-hidden group focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500 disabled:cursor-not-allowed bg-gray-900"
+                                    disabled={isLoading}
+                                    title={`Prompt: ${item.prompt}`}
+                                >
+                                    <video src={item.videoUrl} className="w-full h-full object-cover" preload="metadata" muted />
+                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity flex items-center justify-center p-1">
+                                        <p className="text-white text-xs text-center font-semibold">Reuse</p>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center text-sm text-gray-500 py-4 px-2 bg-gray-800/50 rounded-lg">
+                            <p>Your previous generations will appear here.</p>
+                        </div>
+                    )}
+                </div>
             </div>
             {/* Right Panel: Output */}
-            <div className={`w-full bg-gray-800/50 rounded-xl flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-700 ${aspectRatioToClass[aspectRatio]}`}>
-                 {isLoading ? (
-                    <div className="text-center p-6">
-                        <p className="text-lg text-indigo-400 font-semibold">{currentMessage}</p>
-                        <p className="text-gray-400 mt-2">Video generation can take several minutes. Please be patient.</p>
-                    </div>
-                ) : videoUrl ? (
-                    <video src={videoUrl} controls autoPlay loop className="w-full h-full object-cover" />
-                ) : (
-                     <div className="text-center text-gray-500 p-8">
-                        <VideoCameraIcon className="w-16 h-16 mx-auto mb-4"/>
-                        <p>Your generated video will appear here</p>
+             <div className="flex flex-col space-y-4">
+                <div className={`w-full bg-gray-800/50 rounded-xl flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-700 ${aspectRatioToClass[aspectRatio]}`}>
+                    {isLoading ? (
+                        <div className="text-center p-6">
+                            <p className="text-lg text-indigo-400 font-semibold">{currentMessage}</p>
+                            <p className="text-gray-400 mt-2">Video generation can take several minutes. Please be patient.</p>
+                        </div>
+                    ) : videoUrl ? (
+                        <video
+                            ref={videoRef}
+                            src={videoUrl}
+                            controls
+                            autoPlay
+                            loop={isLooping}
+                            muted={isMuted}
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <div className="text-center text-gray-500 p-8">
+                            <VideoCameraIcon className="w-16 h-16 mx-auto mb-4"/>
+                            <p>Your generated video will appear here</p>
+                        </div>
+                    )}
+                </div>
+
+                {videoUrl && !isLoading && (
+                    <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-3 flex flex-wrap items-center justify-between gap-y-4 gap-x-6">
+                        {/* Playback Controls */}
+                        <div className="flex items-center space-x-4">
+                            <button
+                                onClick={() => setIsMuted(!isMuted)}
+                                className="p-2 rounded-full text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                                title={isMuted ? "Unmute" : "Mute"}
+                            >
+                                {isMuted ? <SpeakerXMarkIcon className="w-6 h-6" /> : <SpeakerWaveIcon className="w-6 h-6" />}
+                            </button>
+                            <button
+                                onClick={() => setIsLooping(!isLooping)}
+                                className={`p-2 rounded-full hover:bg-gray-700 transition-colors ${isLooping ? 'text-indigo-400' : 'text-gray-400 hover:text-white'}`}
+                                title={isLooping ? "Disable loop" : "Enable loop"}
+                            >
+                                <ArrowPathIcon className="w-6 h-6" />
+                            </button>
+                            
+                            <div className="h-6 w-px bg-gray-600"></div>
+
+                            <div className="flex items-center space-x-2">
+                                <span className="text-sm font-medium text-gray-400">Speed:</span>
+                                {playbackSpeeds.map(speed => (
+                                    <button
+                                        key={speed}
+                                        onClick={() => setPlaybackRate(speed)}
+                                        className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${
+                                            playbackRate === speed
+                                            ? 'bg-indigo-600 text-white'
+                                            : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                                        }`}
+                                    >
+                                        {speed}x
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Info & Actions */}
+                        <div className="flex items-center space-x-4">
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-900/50 text-blue-300 border border-blue-500/50">
+                                {resolution} HD
+                            </span>
+
+                            <button
+                                onClick={handleDownload}
+                                className="inline-flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                                title="Download Video"
+                            >
+                                <ArrowDownTrayIcon className="w-5 h-5 mr-2" />
+                                Download
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>

@@ -100,5 +100,17 @@ export const generateVideo = async (options: VideoGenerationOptions): Promise<st
     }
 
     const videoBlob = await videoResponse.blob();
-    return URL.createObjectURL(videoBlob);
+    
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            if (typeof reader.result === 'string') {
+                resolve(reader.result);
+            } else {
+                reject(new Error("Failed to convert video blob to data URL."));
+            }
+        };
+        reader.onerror = () => reject(new Error("Error reading video blob."));
+        reader.readAsDataURL(videoBlob);
+    });
 }
