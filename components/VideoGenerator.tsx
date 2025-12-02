@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import ApiKeySelector from './ApiKeySelector';
 import Spinner from './Spinner';
 import { generateVideo, VideoGenerationOptions } from '../services/geminiService';
 import { SparklesIcon, ExclamationTriangleIcon, VideoCameraIcon, ArrowDownTrayIcon, SpeakerWaveIcon, SpeakerXMarkIcon, ArrowPathIcon, TrashIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
@@ -26,7 +25,6 @@ interface VideoHistoryItem {
 const LOCAL_STORAGE_KEY = 'tidfy-video-history';
 
 const VideoGenerator: React.FC = () => {
-    const [apiKeySelected, setApiKeySelected] = useState<boolean | null>(null);
     const [prompt, setPrompt] = useState<string>('');
     const [aspectRatio, setAspectRatio] = useState<VideoAspectRatio>('16:9');
     const [resolution, setResolution] = useState<VideoResolution>('720p');
@@ -45,16 +43,6 @@ const VideoGenerator: React.FC = () => {
     const speedMenuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const checkApiKey = async () => {
-            if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
-                const hasKey = await window.aistudio.hasSelectedApiKey();
-                setApiKeySelected(hasKey);
-            } else {
-                setApiKeySelected(true);
-            }
-        };
-        checkApiKey();
-
         try {
             const savedHistory = localStorage.getItem(LOCAL_STORAGE_KEY);
             if (savedHistory) {
@@ -140,10 +128,6 @@ const VideoGenerator: React.FC = () => {
             console.error(err);
             const errorMessage = err.message || 'An unknown error occurred.';
             setError(errorMessage);
-            if (errorMessage.includes("Requested entity was not found")) {
-                setError("API key not found or invalid. Please select your key again.");
-                setApiKeySelected(false);
-            }
         } finally {
             setIsLoading(false);
         }
@@ -176,15 +160,6 @@ const VideoGenerator: React.FC = () => {
             console.error("Could not clear video history from localStorage", e);
         }
     };
-
-
-    if (apiKeySelected === null) {
-        return <div className="flex justify-center items-center h-64"><Spinner className="w-12 h-12" /></div>;
-    }
-
-    if (!apiKeySelected) {
-        return <ApiKeySelector onKeySelected={() => setApiKeySelected(true)} featureName="Videos" />;
-    }
 
     const aspectRatioToClass = {
         '16:9': 'aspect-video',

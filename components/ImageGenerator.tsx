@@ -3,7 +3,6 @@ import Spinner from './Spinner';
 import { generateImage, ImageGenerationOptions } from '../services/geminiService';
 import { SparklesIcon, ExclamationTriangleIcon, PhotoIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { ImageAspectRatio, IMAGE_ASPECT_RATIOS, ImageResolution, IMAGE_RESOLUTIONS } from '../types';
-import ApiKeySelector from './ApiKeySelector';
 
 interface ImageHistoryItem {
   imageUrl: string;
@@ -16,7 +15,6 @@ interface ImageHistoryItem {
 const LOCAL_STORAGE_KEY = 'tidfy-image-history-hq';
 
 const ImageGenerator: React.FC = () => {
-    const [apiKeySelected, setApiKeySelected] = useState<boolean | null>(null);
     const [prompt, setPrompt] = useState<string>('');
     const [negativePrompt, setNegativePrompt] = useState<string>('');
     const [aspectRatio, setAspectRatio] = useState<ImageAspectRatio>('1:1');
@@ -27,16 +25,6 @@ const ImageGenerator: React.FC = () => {
     const [history, setHistory] = useState<ImageHistoryItem[]>([]);
 
     useEffect(() => {
-        const checkApiKey = async () => {
-            if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
-                const hasKey = await window.aistudio.hasSelectedApiKey();
-                setApiKeySelected(hasKey);
-            } else {
-                setApiKeySelected(true); // Default to true if check is not available
-            }
-        };
-        checkApiKey();
-
         try {
             const savedHistory = localStorage.getItem(LOCAL_STORAGE_KEY);
             if (savedHistory) {
@@ -73,10 +61,6 @@ const ImageGenerator: React.FC = () => {
         } catch (err: any) {
             const errorMessage = err.message || 'An unknown error occurred while generating the image.';
             setError(errorMessage);
-            if (errorMessage.includes("Requested entity was not found")) {
-                setError("API key not found or invalid. Please select your key again.");
-                setApiKeySelected(false);
-            }
         } finally {
             setIsLoading(false);
         }
@@ -99,14 +83,6 @@ const ImageGenerator: React.FC = () => {
             console.error("Could not clear history from localStorage", e);
         }
     };
-
-    if (apiKeySelected === null) {
-        return <div className="flex justify-center items-center h-64"><Spinner className="w-12 h-12" /></div>;
-    }
-
-    if (!apiKeySelected) {
-        return <ApiKeySelector onKeySelected={() => setApiKeySelected(true)} featureName="High-Quality Images" />;
-    }
 
     const aspectRatioToClass = {
         '1:1': 'aspect-square',
