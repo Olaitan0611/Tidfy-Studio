@@ -1,6 +1,6 @@
-
 import { GoogleGenAI, Modality } from "@google/genai";
-import { ImageAspectRatio, VideoAspectRatio, VideoResolution, AudioVoice } from '../types';
+// FIX: Added ImageResolution to the import from types.ts.
+import { ImageAspectRatio, VideoAspectRatio, VideoResolution, AudioVoice, ImageResolution } from '../types';
 
 
 // A new instance is created before each API call in the components to ensure the latest API key is used.
@@ -10,24 +10,25 @@ export interface ImageGenerationOptions {
   prompt: string;
   negativePrompt?: string;
   aspectRatio: ImageAspectRatio;
+  resolution: ImageResolution;
 }
 
 export const generateImage = async (options: ImageGenerationOptions): Promise<string> => {
   const ai = getAiClient();
-  // Negative prompts are not officially supported via a separate field in this model,
-  // so we append it to the main prompt as a common technique.
+  // Negative prompts are appended to the main prompt as a common technique.
   const fullPrompt = options.negativePrompt 
     ? `${options.prompt}, do not include: ${options.negativePrompt}` 
     : options.prompt;
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash-image',
+    model: 'gemini-3-pro-image-preview',
     contents: {
       parts: [{ text: fullPrompt }],
     },
     config: {
       imageConfig: {
         aspectRatio: options.aspectRatio,
+        imageSize: options.resolution,
       },
     },
   });

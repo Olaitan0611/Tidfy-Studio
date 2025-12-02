@@ -1,4 +1,5 @@
 
+
 export enum Tab {
   VIDEO = 'video',
   IMAGE = 'image',
@@ -9,10 +10,18 @@ export type ImageAspectRatio = "1:1" | "16:9" | "9:16" | "4:3" | "3:4";
 export type VideoAspectRatio = "16:9" | "9:16";
 export type VideoResolution = "720p" | "1080p";
 export type AudioVoice = "Kore" | "Puck" | "Zephyr" | "Charon";
+// FIX: Add ImageResolution type for image generation quality options. This resolves import errors in services/geminiService.ts and components/ImageGenerator.tsx.
+export type ImageResolution = "1K" | "2K" | "4K";
 
 export const IMAGE_ASPECT_RATIOS: ImageAspectRatio[] = ["1:1", "16:9", "9:16", "4:3", "3:4"];
 export const VIDEO_ASPECT_RATIOS: VideoAspectRatio[] = ["16:9", "9:16"];
 export const VIDEO_RESOLUTIONS: VideoResolution[] = ["720p", "1080p"];
+// FIX: Add IMAGE_RESOLUTIONS constant for the image quality selection UI. This resolves an import error in components/ImageGenerator.tsx.
+export const IMAGE_RESOLUTIONS: { name: string, value: ImageResolution }[] = [
+    { name: 'Standard (1K)', value: '1K' },
+    { name: 'High (2K)', value: '2K' },
+    { name: 'Ultra (4K)', value: '4K' },
+];
 export const AUDIO_VOICES: { name: string, value: AudioVoice }[] = [
     { name: 'Zephyr (Female)', value: 'Zephyr' },
     { name: 'Charon (Female)', value: 'Charon' },

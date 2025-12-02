@@ -1,8 +1,9 @@
 import React from 'react';
+import Logo from './Logo';
 
 const AfricaMap = () => (
     <svg
-      className="absolute inset-0 w-full h-full object-contain text-indigo-500/10 animate-mapGlow"
+      className="absolute inset-0 w-full h-full object-contain text-cyan-500/10 animate-mapGlow"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 550 600"
       fill="currentColor"
@@ -17,10 +18,10 @@ const WelcomeScreen: React.FC = () => {
     <div className="fixed inset-0 bg-gray-950 flex items-center justify-center z-50 animate-fadeOut overflow-hidden">
       <AfricaMap />
       <div className="text-center relative z-10 p-4">
-        <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white animate-zoomInFromCenter">
-          Tid<span className="text-indigo-400">fy</span> AI Studio
-        </h1>
-        <p className="text-gray-400 mt-4 text-lg md:text-xl animate-fadeInUp">
+        <div className="animate-zoomInFromCenter">
+          <Logo className="h-16 md:h-24 mx-auto" />
+        </div>
+        <p className="text-gray-400 mt-6 text-lg md:text-xl animate-fadeInUp">
           The Epic AI Studio for African Creators.
         </p>
       </div>

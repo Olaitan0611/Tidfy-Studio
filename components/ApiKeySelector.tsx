@@ -1,11 +1,11 @@
-
 import React from 'react';
 
 interface ApiKeySelectorProps {
   onKeySelected: () => void;
+  featureName: string;
 }
 
-const ApiKeySelector: React.FC<ApiKeySelectorProps> = ({ onKeySelected }) => {
+const ApiKeySelector: React.FC<ApiKeySelectorProps> = ({ onKeySelected, featureName }) => {
   const handleSelectKey = async () => {
     // This function is assumed to be provided by the execution environment
     if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
@@ -18,14 +18,14 @@ const ApiKeySelector: React.FC<ApiKeySelectorProps> = ({ onKeySelected }) => {
   };
 
   return (
-    <div className="bg-gray-800 border border-indigo-500/30 rounded-lg p-8 text-center flex flex-col items-center">
-      <h2 className="text-2xl font-bold text-white mb-4">API Key Required for Video Generation</h2>
+    <div className="bg-gray-800 border border-cyan-500/30 rounded-lg p-8 text-center flex flex-col items-center">
+      <h2 className="text-2xl font-bold text-white mb-4">API Key Required for {featureName}</h2>
       <p className="text-gray-400 mb-6 max-w-md">
-        To generate videos with Veo, you must select an API key from a paid Google Cloud project. This is a one-time setup.
+        To use this feature, you must select an API key from a paid Google Cloud project. This is a one-time setup.
       </p>
       <button
         onClick={handleSelectKey}
-        className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500"
+        className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-cyan-500"
       >
         Select API Key
       </button>
@@ -35,7 +35,7 @@ const ApiKeySelector: React.FC<ApiKeySelectorProps> = ({ onKeySelected }) => {
           href="https://ai.google.dev/gemini-api/docs/billing"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-indigo-400 hover:underline"
+          className="text-cyan-400 hover:underline"
         >
           billing
         </a>.

@@ -1,29 +1,42 @@
-
 import React, { useState, useEffect } from 'react';
 import Spinner from './Spinner';
 import { generateImage, ImageGenerationOptions } from '../services/geminiService';
 import { SparklesIcon, ExclamationTriangleIcon, PhotoIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { ImageAspectRatio, IMAGE_ASPECT_RATIOS } from '../types';
+import { ImageAspectRatio, IMAGE_ASPECT_RATIOS, ImageResolution, IMAGE_RESOLUTIONS } from '../types';
+import ApiKeySelector from './ApiKeySelector';
 
 interface ImageHistoryItem {
   imageUrl: string;
   prompt: string;
   negativePrompt: string;
   aspectRatio: ImageAspectRatio;
+  resolution: ImageResolution;
 }
 
-const LOCAL_STORAGE_KEY = 'tidfy-image-history';
+const LOCAL_STORAGE_KEY = 'tidfy-image-history-hq';
 
 const ImageGenerator: React.FC = () => {
+    const [apiKeySelected, setApiKeySelected] = useState<boolean | null>(null);
     const [prompt, setPrompt] = useState<string>('');
     const [negativePrompt, setNegativePrompt] = useState<string>('');
     const [aspectRatio, setAspectRatio] = useState<ImageAspectRatio>('1:1');
+    const [resolution, setResolution] = useState<ImageResolution>('1K');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [history, setHistory] = useState<ImageHistoryItem[]>([]);
 
     useEffect(() => {
+        const checkApiKey = async () => {
+            if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
+                const hasKey = await window.aistudio.hasSelectedApiKey();
+                setApiKeySelected(hasKey);
+            } else {
+                setApiKeySelected(true); // Default to true if check is not available
+            }
+        };
+        checkApiKey();
+
         try {
             const savedHistory = localStorage.getItem(LOCAL_STORAGE_KEY);
             if (savedHistory) {
@@ -43,11 +56,11 @@ const ImageGenerator: React.FC = () => {
         setError(null);
         setImageUrl(null);
         try {
-            const options: ImageGenerationOptions = { prompt, negativePrompt, aspectRatio };
+            const options: ImageGenerationOptions = { prompt, negativePrompt, aspectRatio, resolution };
             const url = await generateImage(options);
             setImageUrl(url);
             setHistory(prevHistory => {
-                const newHistoryItem = { imageUrl: url, prompt, negativePrompt, aspectRatio };
+                const newHistoryItem = { imageUrl: url, prompt, negativePrompt, aspectRatio, resolution };
                 const newHistory = [newHistoryItem, ...prevHistory];
                 const limitedHistory = newHistory.slice(0, 20); // Keep latest 20 items
                 try {
@@ -58,7 +71,12 @@ const ImageGenerator: React.FC = () => {
                 return limitedHistory;
             });
         } catch (err: any) {
-            setError(err.message || 'An unknown error occurred while generating the image.');
+            const errorMessage = err.message || 'An unknown error occurred while generating the image.';
+            setError(errorMessage);
+            if (errorMessage.includes("Requested entity was not found")) {
+                setError("API key not found or invalid. Please select your key again.");
+                setApiKeySelected(false);
+            }
         } finally {
             setIsLoading(false);
         }
@@ -70,6 +88,7 @@ const ImageGenerator: React.FC = () => {
         setPrompt(item.prompt);
         setNegativePrompt(item.negativePrompt);
         setAspectRatio(item.aspectRatio);
+        setResolution(item.resolution);
     };
 
     const handleClearHistory = () => {
@@ -80,6 +99,14 @@ const ImageGenerator: React.FC = () => {
             console.error("Could not clear history from localStorage", e);
         }
     };
+
+    if (apiKeySelected === null) {
+        return <div className="flex justify-center items-center h-64"><Spinner className="w-12 h-12" /></div>;
+    }
+
+    if (!apiKeySelected) {
+        return <ApiKeySelector onKeySelected={() => setApiKeySelected(true)} featureName="High-Quality Images" />;
+    }
 
     const aspectRatioToClass = {
         '1:1': 'aspect-square',
@@ -100,7 +127,7 @@ const ImageGenerator: React.FC = () => {
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
                         placeholder="e.g., A hyper-realistic portrait of a futuristic African queen..."
-                        className="w-full h-32 p-4 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition resize-none text-base"
+                        className="w-full h-32 p-4 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition resize-none text-base"
                         disabled={isLoading}
                     />
                 </div>
@@ -111,27 +138,41 @@ const ImageGenerator: React.FC = () => {
                         value={negativePrompt}
                         onChange={(e) => setNegativePrompt(e.target.value)}
                         placeholder="e.g., blurry, cartoon, text"
-                        className="w-full h-20 p-4 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition resize-none text-base"
+                        className="w-full h-20 p-4 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition resize-none text-base"
                         disabled={isLoading}
                     />
                 </div>
-                 <div>
-                    <label htmlFor="aspect-ratio" className="block text-sm font-medium text-gray-300 mb-2">Aspect Ratio</label>
-                    <select
-                        id="aspect-ratio"
-                        value={aspectRatio}
-                        onChange={(e) => setAspectRatio(e.target.value as ImageAspectRatio)}
-                        disabled={isLoading}
-                        className="w-full p-3 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-white"
-                    >
-                        {IMAGE_ASPECT_RATIOS.map(ratio => <option key={ratio} value={ratio}>{ratio}</option>)}
-                    </select>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label htmlFor="aspect-ratio" className="block text-sm font-medium text-gray-300 mb-2">Aspect Ratio</label>
+                        <select
+                            id="aspect-ratio"
+                            value={aspectRatio}
+                            onChange={(e) => setAspectRatio(e.target.value as ImageAspectRatio)}
+                            disabled={isLoading}
+                            className="w-full p-3 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-white"
+                        >
+                            {IMAGE_ASPECT_RATIOS.map(ratio => <option key={ratio} value={ratio}>{ratio}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label htmlFor="resolution-image" className="block text-sm font-medium text-gray-300 mb-2">Quality / Resolution</label>
+                        <select
+                            id="resolution-image"
+                            value={resolution}
+                            onChange={(e) => setResolution(e.target.value as ImageResolution)}
+                            disabled={isLoading}
+                            className="w-full p-3 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-white"
+                        >
+                            {IMAGE_RESOLUTIONS.map(res => <option key={res.value} value={res.value}>{res.name}</option>)}
+                        </select>
+                    </div>
                 </div>
                 
                 <button
                     onClick={handleGenerate}
                     disabled={isLoading}
-                    className="flex items-center justify-center w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-900 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-lg transition-all duration-300"
+                    className="flex items-center justify-center w-full bg-cyan-500 hover:bg-cyan-600 disabled:bg-cyan-900/50 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-lg transition-all duration-300"
                 >
                     {isLoading ? <Spinner /> : <SparklesIcon className="w-6 h-6 mr-2" />}
                     {isLoading ? 'Creating Image...' : 'Generate Image'}
@@ -166,7 +207,7 @@ const ImageGenerator: React.FC = () => {
                                 <button
                                     key={index}
                                     onClick={() => handleHistoryClick(item)}
-                                    className="relative aspect-square rounded-md overflow-hidden group focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500 disabled:cursor-not-allowed"
+                                    className="relative aspect-square rounded-md overflow-hidden group focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-cyan-500 disabled:cursor-not-allowed"
                                     disabled={isLoading}
                                     title={`Prompt: ${item.prompt}`}
                                 >

@@ -71,10 +71,10 @@ const App: React.FC = () => {
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
                       className={`
-                          w-full flex-1 group inline-flex items-center justify-center py-3 px-2 rounded-md font-medium text-sm sm:text-base transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500
+                          w-full flex-1 group inline-flex items-center justify-center py-3 px-2 rounded-md font-medium text-sm sm:text-base transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-cyan-500
                           ${
                           activeTab === tab.id
-                              ? 'bg-indigo-600 text-white shadow'
+                              ? 'bg-cyan-500 text-white shadow'
                               : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
                           }
                       `}

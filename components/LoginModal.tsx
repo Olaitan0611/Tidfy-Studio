@@ -32,7 +32,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLogin }) => {
                         id="name"
                         placeholder="Enter your name"
                         required
-                        className="w-full p-3 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-white"
+                        className="w-full p-3 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-white"
                     />
                 </div>
             )}
@@ -43,7 +43,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLogin }) => {
                     id="email"
                     placeholder="you@example.com"
                     required
-                    className="w-full p-3 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-white"
+                    className="w-full p-3 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-white"
                 />
             </div>
              <div>
@@ -54,12 +54,12 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLogin }) => {
                     placeholder="••••••••"
                     required
                     minLength={8}
-                    className="w-full p-3 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-white"
+                    className="w-full p-3 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-white"
                 />
             </div>
              <button
                 type="submit"
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300"
+                className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300"
             >
                 Continue
             </button>
@@ -67,7 +67,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLogin }) => {
 
         <p className="text-center text-gray-500 text-sm mt-6">
             {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
-            <button onClick={() => setIsSignUp(!isSignUp)} className="font-medium text-indigo-400 hover:underline">
+            <button onClick={() => setIsSignUp(!isSignUp)} className="font-medium text-cyan-400 hover:underline">
                  {isSignUp ? 'Log In' : 'Sign Up'}
             </button>
         </p>
