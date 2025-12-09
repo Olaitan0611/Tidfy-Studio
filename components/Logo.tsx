@@ -14,13 +14,13 @@ const Logo: React.FC<LogoProps> = ({ className }) => {
       >
         <defs>
           <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{ stopColor: 'rgb(251, 191, 36)', stopOpacity: 1 }} /> 
-            <stop offset="100%" style={{ stopColor: 'rgb(244, 114, 182)', stopOpacity: 1 }} />
+            <stop offset="0%" style={{ stopColor: '#F59E0B', stopOpacity: 1 }} /> 
+            <stop offset="100%" style={{ stopColor: '#F472B6', stopOpacity: 1 }} />
           </linearGradient>
         </defs>
         <path
           d="M10,0 H30 A10,10 0 0 1 40,10 V30 A10,10 0 0 1 30,40 H10 A10,10 0 0 1 0,30 V10 A10,10 0 0 1 10,0 z"
-          className="fill-cyan-500"
+          className="fill-secondary"
         />
         <path
           d="M12,8 H28 V14 H12 z M18,14 V32 H22 V14 z"
@@ -28,15 +28,15 @@ const Logo: React.FC<LogoProps> = ({ className }) => {
         />
          <path 
             d="M20, 21 m -5, 0 a 5,5 0 1,0 10,0 a 5,5 0 1,0 -10,0"
-            className="fill-gray-950"
+            className="fill-background"
         />
          <path 
             d="M20, 21 m -2, 0 a 2,2 0 1,0 4,0 a 2,2 0 1,0 -4,0"
-            className="fill-cyan-400"
+            className="fill-secondary"
         />
       </svg>
-      <span className="text-3xl font-bold tracking-tight text-white">
-        Tid<span className="text-fuchsia-400">fy</span>
+      <span className="text-3xl font-bold tracking-tight text-text-primary">
+        Tid<span className="text-primary">fy</span>
       </span>
     </div>
   );

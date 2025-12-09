@@ -2,6 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Define color variables for light and dark themes */
+:root { /* Light Theme */
+  --color-primary: #D946EF;
+  --color-secondary: #06B6D4;
+  --color-secondary-hover: #0891B2;
+  --color-accent: #F59E0B;
+  --color-highlight: #F472B6;
+
+  --color-background: #F9FAFB;
+  --color-surface: #FFFFFF;
+  --color-surface-input: #F3F4F6;
+  --color-border: #E5E7EB;
+
+  --color-text-primary: #111827;
+  --color-text-secondary: #6B7280;
+  --color-text-tertiary: #9CA3AF;
+  --color-text-on-primary: #FFFFFF;
+  --color-text-on-secondary: #FFFFFF;
+}
+
+.dark { /* Dark Theme */
+  --color-primary: #D946EF;
+  --color-secondary: #06B6D4;
+  --color-secondary-hover: #0891B2;
+  --color-accent: #F59E0B;
+  --color-highlight: #F472B6;
+  
+  --color-background: #030712;
+  --color-surface: #111827;
+  --color-surface-input: #1F2937;
+  --color-border: #374151;
+
+  --color-text-primary: #F3F4F6;
+  --color-text-secondary: #9CA3AF;
+  --color-text-tertiary: #4B5563;
+  --color-text-on-primary: #FFFFFF;
+  --color-text-on-secondary: #FFFFFF;
+}
+
+body {
+  background-color: var(--color-background);
+}
+
+.dark body {
+  background-image:
+    radial-gradient(at 27% 37%, hsla(320, 98%, 61%, 0.1) 0px, transparent 50%),
+    radial-gradient(at 97% 21%, hsla(180, 98%, 61%, 0.1) 0px, transparent 50%),
+    radial-gradient(at 52% 99%, hsla(355, 98%, 76%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 10% 29%, hsla(260, 96%, 68%, 0.1) 0px, transparent 50%),
+    radial-gradient(at 97% 96%, hsla(38, 60%, 74%, 0.1) 0px, transparent 50%),
+    radial-gradient(at 33% 50%, hsla(200, 67%, 73%, 0.1) 0px, transparent 50%),
+    radial-gradient(at 79% 53%, hsla(343, 68%, 79%, 0.1) 0px, transparent 50%);
+}
+
 @keyframes zoomInFromCenter {
   0% {
     transform: scale(0.5);

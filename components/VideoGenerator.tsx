@@ -171,37 +171,37 @@ const VideoGenerator: React.FC = () => {
             {/* Left Panel: Controls */}
             <div className="space-y-6 flex flex-col">
                 <div>
-                    <label htmlFor="prompt-video" className="block text-sm font-medium text-gray-300 mb-2">Prompt</label>
+                    <label htmlFor="prompt-video" className="block text-sm font-medium text-text-primary mb-2">Prompt</label>
                     <textarea
                         id="prompt-video"
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
                         placeholder="e.g., A neon hologram of a cat driving a futuristic car at top speed..."
-                        className="w-full h-32 p-4 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition resize-none text-base"
+                        className="w-full h-32 p-4 bg-surface-input border-2 border-border rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition resize-none text-base"
                         disabled={isLoading}
                     />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                      <div>
-                        <label htmlFor="aspect-ratio-video" className="block text-sm font-medium text-gray-300 mb-2">Aspect Ratio</label>
+                        <label htmlFor="aspect-ratio-video" className="block text-sm font-medium text-text-primary mb-2">Aspect Ratio</label>
                         <select
                             id="aspect-ratio-video"
                             value={aspectRatio}
                             onChange={(e) => setAspectRatio(e.target.value as VideoAspectRatio)}
                             disabled={isLoading}
-                            className="w-full p-3 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-white"
+                            className="w-full p-3 bg-surface-input border-2 border-border rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition"
                         >
                             {VIDEO_ASPECT_RATIOS.map(ratio => <option key={ratio} value={ratio}>{ratio}</option>)}
                         </select>
                     </div>
                      <div>
-                        <label htmlFor="resolution-video" className="block text-sm font-medium text-gray-300 mb-2">Resolution</label>
+                        <label htmlFor="resolution-video" className="block text-sm font-medium text-text-primary mb-2">Resolution</label>
                         <select
                             id="resolution-video"
                             value={resolution}
                             onChange={(e) => setResolution(e.target.value as VideoResolution)}
                             disabled={isLoading}
-                            className="w-full p-3 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-white"
+                            className="w-full p-3 bg-surface-input border-2 border-border rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition"
                         >
                             {VIDEO_RESOLUTIONS.map(res => <option key={res} value={res}>{res}</option>)}
                         </select>
@@ -211,7 +211,7 @@ const VideoGenerator: React.FC = () => {
                 <button
                     onClick={handleGenerate}
                     disabled={isLoading}
-                    className="flex items-center justify-center w-full bg-cyan-500 hover:bg-cyan-600 disabled:bg-cyan-900/50 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-lg transition-all duration-300"
+                    className="flex items-center justify-center w-full bg-secondary hover:bg-secondary-hover disabled:bg-secondary/20 disabled:cursor-not-allowed text-text-on-secondary font-bold py-3 px-8 rounded-lg transition-all duration-300"
                 >
                     {isLoading ? <Spinner /> : <SparklesIcon className="w-6 h-6 mr-2" />}
                     {isLoading ? 'Generating Masterpiece...' : 'Generate Video'}
@@ -224,13 +224,13 @@ const VideoGenerator: React.FC = () => {
                 )}
                 <div className="flex-grow"></div>
                 {/* History Section */}
-                <div className="pt-4 border-t border-white/10">
+                <div className="pt-4 border-t border-border">
                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-semibold text-gray-200">Generation History</h3>
+                        <h3 className="text-lg font-semibold text-text-primary">Generation History</h3>
                         {history.length > 0 && (
                             <button
                                 onClick={handleClearHistory}
-                                className="text-gray-400 hover:text-white transition-colors flex items-center text-sm"
+                                className="text-text-secondary hover:text-text-primary transition-colors flex items-center text-sm"
                                 title="Clear history"
                                 disabled={isLoading}
                             >
@@ -245,7 +245,7 @@ const VideoGenerator: React.FC = () => {
                                 <button
                                     key={index}
                                     onClick={() => handleHistoryClick(item)}
-                                    className="relative aspect-video rounded-md overflow-hidden group focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-cyan-500 disabled:cursor-not-allowed bg-gray-900"
+                                    className="relative aspect-video rounded-md overflow-hidden group focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-secondary disabled:cursor-not-allowed bg-surface"
                                     disabled={isLoading}
                                     title={`Prompt: ${item.prompt}`}
                                 >
@@ -257,7 +257,7 @@ const VideoGenerator: React.FC = () => {
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center text-sm text-gray-500 py-4 px-2 bg-gray-800/50 rounded-lg">
+                        <div className="text-center text-sm text-text-tertiary py-4 px-2 bg-surface-input/50 rounded-lg">
                             <p>Your previous generations will appear here.</p>
                         </div>
                     )}
@@ -265,11 +265,11 @@ const VideoGenerator: React.FC = () => {
             </div>
             {/* Right Panel: Output */}
              <div className="flex flex-col space-y-4">
-                <div className={`w-full bg-gray-800/50 rounded-xl flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-700 ${aspectRatioToClass[aspectRatio]}`}>
+                <div className={`w-full bg-surface-input/50 rounded-xl flex items-center justify-center overflow-hidden border-2 border-dashed border-border ${aspectRatioToClass[aspectRatio]}`}>
                     {isLoading ? (
                         <div className="text-center p-6">
-                            <p className="text-lg text-fuchsia-400 font-semibold">{currentMessage}</p>
-                            <p className="text-gray-400 mt-2">Video generation can take several minutes. Please be patient.</p>
+                            <p className="text-lg text-primary font-semibold">{currentMessage}</p>
+                            <p className="text-text-secondary mt-2">Video generation can take several minutes. Please be patient.</p>
                         </div>
                     ) : videoUrl ? (
                         <video
@@ -282,7 +282,7 @@ const VideoGenerator: React.FC = () => {
                             className="w-full h-full object-cover"
                         />
                     ) : (
-                        <div className="text-center text-gray-500 p-8">
+                        <div className="text-center text-text-tertiary p-8">
                             <VideoCameraIcon className="w-16 h-16 mx-auto mb-4"/>
                             <p>Your generated video will appear here</p>
                         </div>
@@ -290,36 +290,36 @@ const VideoGenerator: React.FC = () => {
                 </div>
 
                 {videoUrl && !isLoading && (
-                    <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-3 flex flex-wrap items-center justify-between gap-y-4 gap-x-6">
+                    <div className="bg-surface-input/50 border border-border rounded-xl p-3 flex flex-wrap items-center justify-between gap-y-4 gap-x-6">
                         {/* Playback Controls */}
                         <div className="flex items-center space-x-4">
                             <button
                                 onClick={() => setIsMuted(!isMuted)}
-                                className="p-2 rounded-full text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                                className="p-2 rounded-full text-text-primary hover:bg-border hover:text-text-primary transition-colors"
                                 title={isMuted ? "Unmute" : "Mute"}
                             >
                                 {isMuted ? <SpeakerXMarkIcon className="w-6 h-6" /> : <SpeakerWaveIcon className="w-6 h-6" />}
                             </button>
                             <button
                                 onClick={() => setIsLooping(!isLooping)}
-                                className={`p-2 rounded-full hover:bg-gray-700 transition-colors ${isLooping ? 'text-fuchsia-400' : 'text-gray-400 hover:text-white'}`}
+                                className={`p-2 rounded-full hover:bg-border transition-colors ${isLooping ? 'text-primary' : 'text-text-secondary hover:text-text-primary'}`}
                                 title={isLooping ? "Disable loop" : "Enable loop"}
                             >
                                 <ArrowPathIcon className="w-6 h-6" />
                             </button>
                             
-                            <div className="h-6 w-px bg-gray-600"></div>
+                            <div className="h-6 w-px bg-border"></div>
                             
                              <div className="relative" ref={speedMenuRef}>
                                 <button
                                     onClick={() => setIsSpeedMenuOpen(!isSpeedMenuOpen)}
-                                    className="flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-gray-300 font-medium py-2 px-3 rounded-lg transition-colors text-sm"
+                                    className="flex items-center justify-center bg-surface-input hover:bg-border text-text-secondary font-medium py-2 px-3 rounded-lg transition-colors text-sm"
                                 >
                                     <span>{playbackRate}x Speed</span>
                                     <ChevronDownIcon className={`w-4 h-4 ml-2 transition-transform ${isSpeedMenuOpen ? 'rotate-180' : ''}`} />
                                 </button>
                                 {isSpeedMenuOpen && (
-                                    <div className="absolute bottom-full mb-2 w-full bg-gray-600 rounded-lg shadow-lg overflow-hidden z-10">
+                                    <div className="absolute bottom-full mb-2 w-full bg-border rounded-lg shadow-lg overflow-hidden z-10">
                                         {playbackSpeeds.map(speed => (
                                             <button
                                                 key={speed}
@@ -329,8 +329,8 @@ const VideoGenerator: React.FC = () => {
                                                 }}
                                                 className={`w-full text-left px-3 py-2 text-sm transition-colors ${
                                                     playbackRate === speed
-                                                    ? 'bg-cyan-600 text-white'
-                                                    : 'text-gray-200 hover:bg-gray-500'
+                                                    ? 'bg-secondary-hover text-text-on-secondary'
+                                                    : 'text-text-primary hover:bg-surface-input'
                                                 }`}
                                             >
                                                 {speed}x
@@ -343,13 +343,13 @@ const VideoGenerator: React.FC = () => {
 
                         {/* Info & Actions */}
                         <div className="flex items-center space-x-4">
-                            <span className="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-gray-900/50 text-gray-300 border border-gray-600">
+                            <span className="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-surface/50 text-text-primary border border-border">
                                 {resolution}
                             </span>
 
                             <button
                                 onClick={handleDownload}
-                                className="inline-flex items-center justify-center bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                                className="inline-flex items-center justify-center bg-secondary hover:bg-secondary-hover text-text-on-secondary font-bold py-2 px-4 rounded-lg transition-colors"
                                 title="Download Video"
                             >
                                 <ArrowDownTrayIcon className="w-5 h-5 mr-2" />

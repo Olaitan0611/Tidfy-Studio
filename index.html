@@ -1,11 +1,40 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tidfy</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: 'var(--color-primary)',
+              secondary: {
+                DEFAULT: 'var(--color-secondary)',
+                hover: 'var(--color-secondary-hover)',
+              },
+              accent: 'var(--color-accent)',
+              highlight: 'var(--color-highlight)',
+              
+              background: 'var(--color-background)',
+              surface: 'var(--color-surface)',
+              'surface-input': 'var(--color-surface-input)',
+              border: 'var(--color-border)',
+
+              'text-primary': 'var(--color-text-primary)',
+              'text-secondary': 'var(--color-text-secondary)',
+              'text-tertiary': 'var(--color-text-tertiary)',
+              'text-on-primary': 'var(--color-text-on-primary)',
+              'text-on-secondary': 'var(--color-text-on-secondary)',
+            }
+          }
+        }
+      }
+    </script>
     <script type="importmap">
       {
         "imports": {
@@ -17,21 +46,8 @@
         }
       }
     </script>
-    <style>
-      body {
-        background-color: #030712; /* gray-950 */
-        background-image:
-          radial-gradient(at 27% 37%, hsla(320, 98%, 61%, 0.1) 0px, transparent 50%),
-          radial-gradient(at 97% 21%, hsla(180, 98%, 61%, 0.1) 0px, transparent 50%),
-          radial-gradient(at 52% 99%, hsla(355, 98%, 76%, 0.15) 0px, transparent 50%),
-          radial-gradient(at 10% 29%, hsla(260, 96%, 68%, 0.1) 0px, transparent 50%),
-          radial-gradient(at 97% 96%, hsla(38, 60%, 74%, 0.1) 0px, transparent 50%),
-          radial-gradient(at 33% 50%, hsla(200, 67%, 73%, 0.1) 0px, transparent 50%),
-          radial-gradient(at 79% 53%, hsla(343, 68%, 79%, 0.1) 0px, transparent 50%);
-      }
-    </style>
   </head>
-  <body class="text-white">
+  <body class="bg-background text-text-primary">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>

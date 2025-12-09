@@ -57,25 +57,25 @@ const App: React.FC = () => {
   return (
     <>
       {showLoginModal && <LoginModal onLogin={handleLogin} />}
-      <div className={`min-h-screen text-gray-100 font-sans flex flex-col transition-filter duration-500 ${showLoginModal ? 'blur-sm' : ''}`}>
+      <div className={`min-h-screen text-text-primary font-sans flex flex-col transition-filter duration-500 ${showLoginModal ? 'blur-sm' : ''}`}>
         <Header />
         <main className="flex-grow p-4 sm:p-6 md:p-8 max-w-screen-2xl mx-auto w-full">
-          <div className="bg-gray-900/50 backdrop-blur-sm border border-white/10 rounded-xl shadow-2xl p-4 sm:p-6 md:p-8">
-              <h2 className="text-3xl font-bold tracking-tight text-white mb-2">AI Content Studio</h2>
-              <p className="text-gray-400 mb-8">Choose a tool to start creating with the power of Gemini.</p>
+          <div className="bg-surface/50 backdrop-blur-sm border border-border rounded-xl shadow-2xl p-4 sm:p-6 md:p-8">
+              <h2 className="text-3xl font-bold tracking-tight text-text-primary mb-2">AI Content Studio</h2>
+              <p className="text-text-secondary mb-8">Choose a tool to start creating with the power of Gemini.</p>
               
               <div className="mb-8">
-                  <div className="flex space-x-2 sm:space-x-4 bg-gray-800/60 p-2 rounded-lg">
+                  <div className="flex space-x-2 sm:space-x-4 bg-surface/60 p-2 rounded-lg">
                   {tabs.map((tab) => (
                       <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
                       className={`
-                          w-full flex-1 group inline-flex items-center justify-center py-3 px-2 rounded-md font-medium text-sm sm:text-base transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-cyan-500
+                          w-full flex-1 group inline-flex items-center justify-center py-3 px-2 rounded-md font-medium text-sm sm:text-base transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-secondary
                           ${
                           activeTab === tab.id
-                              ? 'bg-cyan-500 text-white shadow'
-                              : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
+                              ? 'bg-secondary text-text-on-secondary shadow'
+                              : 'text-text-secondary hover:bg-surface-input/50 hover:text-text-primary'
                           }
                       `}
                       >

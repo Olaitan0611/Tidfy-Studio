@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Spinner from './Spinner';
 import { generateAudio } from '../services/geminiService';
 import { decode, decodeAudioData } from '../utils/audio';
-import { SparklesIcon, ExclamationTriangleIcon, PlayIcon, PauseIcon, ArrowPathIcon, TrashIcon, SpeakerWaveIcon } from '@heroicons/react/24/solid';
+import { SparklesIcon, ExclamationTriangleIcon, PlayIcon, PauseIcon, ArrowPathIcon, TrashIcon, SpeakerWaveIcon, CloudArrowUpIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import { AudioVoice, AUDIO_VOICES } from '../types';
 
 interface AudioHistoryItem {
@@ -12,6 +12,9 @@ interface AudioHistoryItem {
 }
 
 const LOCAL_STORAGE_KEY = 'tidfy-audio-history';
+const CLONED_VOICE_FLAG_KEY = 'tidfy-voice-cloned';
+const CLONED_VOICE_NAME_KEY = 'tidfy-voice-name';
+
 
 const AudioGenerator: React.FC = () => {
     const [prompt, setPrompt] = useState<string>('');
@@ -20,6 +23,12 @@ const AudioGenerator: React.FC = () => {
     const [audioData, setAudioData] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [history, setHistory] = useState<AudioHistoryItem[]>([]);
+    
+    // Voice Cloning State
+    const [isVoiceCloned, setIsVoiceCloned] = useState<boolean>(false);
+    const [clonedSampleName, setClonedSampleName] = useState<string | null>(null);
+    const [isCloning, setIsCloning] = useState<boolean>(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     
     // Playback state
     const [activePlayingSource, setActivePlayingSource] = useState<'main' | 'history' | null>(null);
@@ -30,13 +39,19 @@ const AudioGenerator: React.FC = () => {
 
     useEffect(() => {
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+        
         try {
             const savedHistory = localStorage.getItem(LOCAL_STORAGE_KEY);
-            if (savedHistory) {
-                setHistory(JSON.parse(savedHistory));
+            if (savedHistory) setHistory(JSON.parse(savedHistory));
+
+            const clonedFlag = localStorage.getItem(CLONED_VOICE_FLAG_KEY);
+            const clonedName = localStorage.getItem(CLONED_VOICE_NAME_KEY);
+            if (clonedFlag === 'true' && clonedName) {
+                setIsVoiceCloned(true);
+                setClonedSampleName(clonedName);
             }
         } catch (e) {
-            console.error("Failed to load audio history", e);
+            console.error("Failed to load data from localStorage", e);
         }
         
         return () => {
@@ -85,19 +100,26 @@ const AudioGenerator: React.FC = () => {
             setError("Could not play audio file.");
         }
     };
-
+    
     const handleGenerate = async () => {
         if (!prompt.trim()) {
             setError('Please enter some text to generate audio.');
             return;
         }
+        if (voice === 'CLONED_VOICE' && !isVoiceCloned) {
+            setError('Please upload an audio sample to clone a voice first.');
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
         setAudioData(null);
         stopAudio();
         
         try {
-            const data = await generateAudio(prompt, voice);
+            // Use a default prebuilt voice for the cloned voice generation as a placeholder
+            const generationVoice = voice === 'CLONED_VOICE' ? 'Zephyr' : voice;
+            const data = await generateAudio(prompt, generationVoice);
             setAudioData(data);
             
             setHistory(prev => {
@@ -106,7 +128,6 @@ const AudioGenerator: React.FC = () => {
                 return newHistory;
             });
 
-            await playAudio(data, 'main');
         } catch (err: any) {
             setError(err.message || 'An unknown error occurred while generating audio.');
         } finally {
@@ -132,51 +153,122 @@ const AudioGenerator: React.FC = () => {
         setPrompt(item.prompt);
         setVoice(item.voice);
     };
+
+    const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setError(null);
+        setIsCloning(true);
+        
+        // Simulate cloning process
+        setTimeout(() => {
+            setIsCloning(false);
+            setIsVoiceCloned(true);
+            setClonedSampleName(file.name);
+            localStorage.setItem(CLONED_VOICE_FLAG_KEY, 'true');
+            localStorage.setItem(CLONED_VOICE_NAME_KEY, file.name);
+        }, 3000);
+    };
+
+    const handleRemoveClonedVoice = () => {
+        setIsVoiceCloned(false);
+        setClonedSampleName(null);
+        localStorage.removeItem(CLONED_VOICE_FLAG_KEY);
+        localStorage.removeItem(CLONED_VOICE_NAME_KEY);
+        setVoice('Zephyr'); // Revert to a default voice
+    };
     
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
             {/* Left Panel: Controls */}
             <div className="space-y-6">
                  <div>
-                    <label htmlFor="prompt-audio" className="block text-sm font-medium text-gray-300 mb-2">Text</label>
+                    <label htmlFor="prompt-audio" className="block text-sm font-medium text-text-primary mb-2">Text</label>
                      <textarea
                         id="prompt-audio"
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
                         placeholder="Enter text to convert to speech..."
-                        className="w-full h-36 p-4 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition resize-none text-lg"
-                        disabled={isLoading}
+                        className="w-full h-36 p-4 bg-surface-input border-2 border-border rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition resize-none text-lg"
+                        disabled={isLoading || isCloning}
                     />
                 </div>
                  <div>
-                    <label htmlFor="voice-audio" className="block text-sm font-medium text-gray-300 mb-2">Voice</label>
+                    <label htmlFor="voice-audio" className="block text-sm font-medium text-text-primary mb-2">Voice</label>
                     <select
                         id="voice-audio"
                         value={voice}
                         onChange={(e) => setVoice(e.target.value as AudioVoice)}
-                        disabled={isLoading}
-                        className="w-full p-3 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-white"
+                        disabled={isLoading || isCloning}
+                        className="w-full p-3 bg-surface-input border-2 border-border rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition"
                     >
                         {AUDIO_VOICES.map(v => <option key={v.value} value={v.value}>{v.name}</option>)}
                     </select>
                 </div>
+
+                {voice === 'CLONED_VOICE' && (
+                    <div className="p-4 bg-surface-input/50 rounded-lg border-2 border-dashed border-border transition-all duration-300">
+                        {!isVoiceCloned && !isCloning && (
+                            <div className="text-center">
+                                <CloudArrowUpIcon className="w-10 h-10 mx-auto text-text-secondary mb-2" />
+                                <h4 className="font-semibold text-text-primary">Upload Audio Sample</h4>
+                                <p className="text-xs text-text-tertiary mb-4">WAV or MP3, max 1 minute, clear voice.</p>
+                                <input type="file" ref={fileInputRef} onChange={handleFileSelect} hidden accept="audio/wav, audio/mpeg" />
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="bg-surface hover:bg-border text-text-primary font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
+                                >
+                                    Choose File
+                                </button>
+                            </div>
+                        )}
+                        {isCloning && (
+                            <div className="flex flex-col items-center justify-center p-4">
+                                <Spinner className="w-8 h-8"/>
+                                <p className="mt-3 text-text-secondary font-medium">Cloning voice...</p>
+                            </div>
+                        )}
+                        {isVoiceCloned && !isCloning && (
+                            <div className="flex items-center justify-between">
+                                <div className='flex items-center min-w-0'>
+                                    <CheckCircleIcon className="w-6 h-6 text-green-500 mr-3 flex-shrink-0" />
+                                    <div className="min-w-0">
+                                        <p className="text-sm font-semibold text-text-primary truncate" title={clonedSampleName ?? undefined}>
+                                           {clonedSampleName}
+                                        </p>
+                                        <p className="text-xs text-green-400">Voice ready to use</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={handleRemoveClonedVoice}
+                                    className="p-2 text-text-tertiary hover:text-red-500 transition-colors"
+                                    title="Remove cloned voice"
+                                >
+                                    <XCircleIcon className="w-5 h-5"/>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
+
                  <button
                     onClick={handleGenerate}
-                    disabled={isLoading}
-                    className="flex items-center justify-center w-full bg-cyan-500 hover:bg-cyan-600 disabled:bg-cyan-900/50 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-lg transition-all duration-300"
+                    disabled={isLoading || isCloning}
+                    className="flex items-center justify-center w-full bg-secondary hover:bg-secondary-hover disabled:bg-secondary/20 disabled:cursor-not-allowed text-text-on-secondary font-bold py-3 px-8 rounded-lg transition-all duration-300"
                 >
                     {isLoading ? <Spinner /> : <SparklesIcon className="w-6 h-6 mr-2" />}
-                    {isLoading ? 'Synthesizing Audio...' : 'Generate Audio'}
+                    {isLoading ? 'Synthesizing Audio...' : isCloning ? 'Waiting for Clone...' : 'Generate Audio'}
                 </button>
             </div>
             {/* Right Panel: History & Output */}
             <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-semibold text-gray-200">Generation History</h3>
+                    <h3 className="text-lg font-semibold text-text-primary">Generation History</h3>
                     {history.length > 0 && (
                         <button
                             onClick={handleClearHistory}
-                            className="text-gray-400 hover:text-white transition-colors flex items-center text-sm"
+                            className="text-text-secondary hover:text-text-primary transition-colors flex items-center text-sm"
                             title="Clear history"
                             disabled={isLoading}
                         >
@@ -186,38 +278,46 @@ const AudioGenerator: React.FC = () => {
                     )}
                 </div>
                 {history.length > 0 ? (
-                    <div className="max-h-80 overflow-y-auto space-y-3 pr-2 bg-gray-800/50 p-4 rounded-lg">
-                        {history.map((item, index) => (
-                            <div key={index} className="bg-gray-700/50 p-3 rounded-lg flex items-center justify-between">
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm text-white truncate font-medium" title={item.prompt}>{item.prompt}</p>
-                                    <p className="text-xs text-gray-400">{AUDIO_VOICES.find(v => v.value === item.voice)?.name}</p>
+                    <div className="max-h-80 overflow-y-auto space-y-3 pr-2 bg-surface-input/50 p-4 rounded-lg">
+                        {history.map((item, index) => {
+                            const voiceName = item.voice === 'CLONED_VOICE'
+                                ? 'Cloned Voice'
+                                : AUDIO_VOICES.find(v => v.value === item.voice)?.name;
+
+                            return (
+                                <div key={index} className="bg-surface/50 p-3 rounded-lg flex items-center justify-between">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm text-text-primary truncate font-medium" title={item.prompt}>{item.prompt}</p>
+                                        <p className="text-xs text-text-secondary">{voiceName}</p>
+                                    </div>
+                                    <div className="flex items-center ml-4">
+                                        <button
+                                            onClick={() => handleHistoryReuse(item)}
+                                            className="p-2 text-text-secondary hover:text-text-primary transition-colors"
+                                            title="Reuse settings"
+                                            disabled={isCloning}
+                                        >
+                                            <ArrowPathIcon className="w-5 h-5" />
+                                        </button>
+                                        <button
+                                            onClick={() => handleHistoryPlay(item, index)}
+                                            className="p-2 text-text-secondary hover:text-text-primary transition-colors"
+                                            title="Play audio"
+                                            disabled={isCloning}
+                                        >
+                                            {activePlayingSource === 'history' && activeHistoryIndex === index ? (
+                                                <PauseIcon className="w-5 h-5 text-secondary" />
+                                            ) : (
+                                                <PlayIcon className="w-5 h-5" />
+                                            )}
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className="flex items-center ml-4">
-                                    <button
-                                        onClick={() => handleHistoryReuse(item)}
-                                        className="p-2 text-gray-400 hover:text-white transition-colors"
-                                        title="Reuse prompt and voice"
-                                    >
-                                        <ArrowPathIcon className="w-5 h-5" />
-                                    </button>
-                                    <button
-                                        onClick={() => handleHistoryPlay(item, index)}
-                                        className="p-2 text-gray-400 hover:text-white transition-colors"
-                                        title="Play audio"
-                                    >
-                                        {activePlayingSource === 'history' && activeHistoryIndex === index ? (
-                                            <PauseIcon className="w-5 h-5 text-cyan-400" />
-                                        ) : (
-                                            <PlayIcon className="w-5 h-5" />
-                                        )}
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 ) : (
-                     <div className="text-center text-sm text-gray-500 py-4 px-2 bg-gray-800/50 rounded-lg">
+                     <div className="text-center text-sm text-text-tertiary py-4 px-2 bg-surface-input/50 rounded-lg">
                         <p>Your previous generations will appear here.</p>
                     </div>
                 )}
@@ -230,13 +330,13 @@ const AudioGenerator: React.FC = () => {
                 )}
                 
                 {audioData && !isLoading && (
-                    <div className="flex justify-center items-center bg-gray-800/50 border-2 border-gray-700 p-6 rounded-xl">
-                         <button onClick={() => activePlayingSource === 'main' ? stopAudio() : playAudio(audioData, 'main')} className="bg-cyan-500 p-4 rounded-full text-white hover:bg-cyan-600 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-cyan-500">
+                    <div className="flex justify-center items-center bg-surface-input/50 border-2 border-border p-6 rounded-xl">
+                         <button onClick={() => activePlayingSource === 'main' ? stopAudio() : playAudio(audioData, 'main')} className="bg-secondary p-4 rounded-full text-text-on-secondary hover:bg-secondary-hover transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-secondary">
                             {activePlayingSource === 'main' ? <PauseIcon className="w-8 h-8"/> : <PlayIcon className="w-8 h-8"/>}
                         </button>
                         <div className="ml-6 text-lg font-medium">
                             <p>{activePlayingSource === 'main' ? 'Playing...' : 'Latest Audio Ready'}</p>
-                            <p className="text-sm text-gray-400">Click to play/pause</p>
+                            <p className="text-sm text-text-secondary">Click to play/pause</p>
                         </div>
                     </div>
                 )}

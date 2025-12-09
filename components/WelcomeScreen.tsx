@@ -3,7 +3,7 @@ import Logo from './Logo';
 
 const AfricaMap = () => (
     <svg
-      className="absolute inset-0 w-full h-full object-contain text-cyan-500/10 animate-mapGlow"
+      className="absolute inset-0 w-full h-full object-contain text-secondary/10 animate-mapGlow"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 550 600"
       fill="currentColor"
@@ -15,14 +15,14 @@ const AfricaMap = () => (
 
 const WelcomeScreen: React.FC = () => {
   return (
-    <div className="fixed inset-0 bg-gray-950 flex items-center justify-center z-50 animate-fadeOut overflow-hidden">
+    <div className="fixed inset-0 bg-background flex items-center justify-center z-50 animate-fadeOut overflow-hidden">
       <AfricaMap />
       <div className="text-center relative z-10 p-4">
         <div className="animate-zoomInFromCenter">
           <Logo className="h-16 md:h-24 mx-auto" />
         </div>
-        <p className="text-gray-400 mt-6 text-lg md:text-xl animate-fadeInUp">
-          The Epic AI Studio for African Creators.
+        <p className="text-text-primary mt-8 text-xl md:text-2xl font-medium animate-fadeInUp">
+          Unleash Africa's Digital Soul.
         </p>
       </div>
     </div>

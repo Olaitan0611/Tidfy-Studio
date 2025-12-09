@@ -97,48 +97,48 @@ const ImageGenerator: React.FC = () => {
             {/* Left Panel: Controls */}
             <div className="space-y-6 flex flex-col">
                 <div>
-                    <label htmlFor="prompt" className="block text-sm font-medium text-gray-300 mb-2">Prompt</label>
+                    <label htmlFor="prompt" className="block text-sm font-medium text-text-primary mb-2">Prompt</label>
                     <textarea
                         id="prompt"
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
                         placeholder="e.g., A hyper-realistic portrait of a futuristic African queen..."
-                        className="w-full h-32 p-4 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition resize-none text-base"
+                        className="w-full h-32 p-4 bg-surface-input border-2 border-border rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition resize-none text-base"
                         disabled={isLoading}
                     />
                 </div>
                 <div>
-                    <label htmlFor="negative-prompt" className="block text-sm font-medium text-gray-300 mb-2">Negative Prompt (what to avoid)</label>
+                    <label htmlFor="negative-prompt" className="block text-sm font-medium text-text-primary mb-2">Negative Prompt (what to avoid)</label>
                     <textarea
                         id="negative-prompt"
                         value={negativePrompt}
                         onChange={(e) => setNegativePrompt(e.target.value)}
                         placeholder="e.g., blurry, cartoon, text"
-                        className="w-full h-20 p-4 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition resize-none text-base"
+                        className="w-full h-20 p-4 bg-surface-input border-2 border-border rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition resize-none text-base"
                         disabled={isLoading}
                     />
                 </div>
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label htmlFor="aspect-ratio" className="block text-sm font-medium text-gray-300 mb-2">Aspect Ratio</label>
+                        <label htmlFor="aspect-ratio" className="block text-sm font-medium text-text-primary mb-2">Aspect Ratio</label>
                         <select
                             id="aspect-ratio"
                             value={aspectRatio}
                             onChange={(e) => setAspectRatio(e.target.value as ImageAspectRatio)}
                             disabled={isLoading}
-                            className="w-full p-3 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-white"
+                            className="w-full p-3 bg-surface-input border-2 border-border rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition"
                         >
                             {IMAGE_ASPECT_RATIOS.map(ratio => <option key={ratio} value={ratio}>{ratio}</option>)}
                         </select>
                     </div>
                     <div>
-                        <label htmlFor="resolution-image" className="block text-sm font-medium text-gray-300 mb-2">Quality / Resolution</label>
+                        <label htmlFor="resolution-image" className="block text-sm font-medium text-text-primary mb-2">Quality / Resolution</label>
                         <select
                             id="resolution-image"
                             value={resolution}
                             onChange={(e) => setResolution(e.target.value as ImageResolution)}
                             disabled={isLoading}
-                            className="w-full p-3 bg-gray-800 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-white"
+                            className="w-full p-3 bg-surface-input border-2 border-border rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition"
                         >
                             {IMAGE_RESOLUTIONS.map(res => <option key={res.value} value={res.value}>{res.name}</option>)}
                         </select>
@@ -148,7 +148,7 @@ const ImageGenerator: React.FC = () => {
                 <button
                     onClick={handleGenerate}
                     disabled={isLoading}
-                    className="flex items-center justify-center w-full bg-cyan-500 hover:bg-cyan-600 disabled:bg-cyan-900/50 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-lg transition-all duration-300"
+                    className="flex items-center justify-center w-full bg-secondary hover:bg-secondary-hover disabled:bg-secondary/20 disabled:cursor-not-allowed text-text-on-secondary font-bold py-3 px-8 rounded-lg transition-all duration-300"
                 >
                     {isLoading ? <Spinner /> : <SparklesIcon className="w-6 h-6 mr-2" />}
                     {isLoading ? 'Creating Image...' : 'Generate Image'}
@@ -162,13 +162,13 @@ const ImageGenerator: React.FC = () => {
                 
                 <div className="flex-grow"></div>
                 {/* History Section */}
-                <div className="pt-4 border-t border-white/10">
+                <div className="pt-4 border-t border-border">
                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-semibold text-gray-200">Generation History</h3>
+                        <h3 className="text-lg font-semibold text-text-primary">Generation History</h3>
                         {history.length > 0 && (
                             <button
                                 onClick={handleClearHistory}
-                                className="text-gray-400 hover:text-white transition-colors flex items-center text-sm"
+                                className="text-text-secondary hover:text-text-primary transition-colors flex items-center text-sm"
                                 title="Clear history"
                                 disabled={isLoading}
                             >
@@ -183,7 +183,7 @@ const ImageGenerator: React.FC = () => {
                                 <button
                                     key={index}
                                     onClick={() => handleHistoryClick(item)}
-                                    className="relative aspect-square rounded-md overflow-hidden group focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-cyan-500 disabled:cursor-not-allowed"
+                                    className="relative aspect-square rounded-md overflow-hidden group focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-secondary disabled:cursor-not-allowed"
                                     disabled={isLoading}
                                     title={`Prompt: ${item.prompt}`}
                                 >
@@ -195,7 +195,7 @@ const ImageGenerator: React.FC = () => {
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center text-sm text-gray-500 py-4 px-2 bg-gray-800/50 rounded-lg">
+                        <div className="text-center text-sm text-text-tertiary py-4 px-2 bg-surface-input/50 rounded-lg">
                             <p>Your previous generations will appear here.</p>
                         </div>
                     )}
@@ -203,16 +203,16 @@ const ImageGenerator: React.FC = () => {
             </div>
             
             {/* Right Panel: Output */}
-            <div className={`w-full bg-gray-800/50 rounded-xl flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-700 ${aspectRatioToClass[aspectRatio]}`}>
+            <div className={`w-full bg-surface-input/50 rounded-xl flex items-center justify-center overflow-hidden border-2 border-dashed border-border ${aspectRatioToClass[aspectRatio]}`}>
                 {isLoading ? (
-                     <div className="flex flex-col items-center text-gray-400">
+                     <div className="flex flex-col items-center text-text-secondary">
                         <Spinner className="w-16 h-16" />
                         <span className="mt-4">Generating...</span>
                     </div>
                 ) : imageUrl ? (
                     <img src={imageUrl} alt={prompt} className="w-full h-full object-cover" />
                 ) : (
-                    <div className="text-center text-gray-500 p-8">
+                    <div className="text-center text-text-tertiary p-8">
                         <PhotoIcon className="w-16 h-16 mx-auto mb-4"/>
                         <p>Your generated image will appear here</p>
                     </div>
