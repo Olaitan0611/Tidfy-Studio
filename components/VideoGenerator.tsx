@@ -24,10 +24,14 @@ interface VideoHistoryItem {
 
 const LOCAL_STORAGE_KEY = 'tidfy-video-history';
 
-const VideoGenerator: React.FC = () => {
+interface VideoGeneratorProps {
+    lowBandwidth: boolean;
+}
+
+const VideoGenerator: React.FC<VideoGeneratorProps> = ({ lowBandwidth }) => {
     const [prompt, setPrompt] = useState<string>('');
     const [aspectRatio, setAspectRatio] = useState<VideoAspectRatio>('16:9');
-    const [resolution, setResolution] = useState<VideoResolution>('720p');
+    const [resolution, setResolution] = useState<VideoResolution>(lowBandwidth ? '480p' : '720p');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [videoUrl, setVideoUrl] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -52,6 +56,14 @@ const VideoGenerator: React.FC = () => {
             console.error("Failed to load video history from localStorage", error);
         }
     }, []);
+    
+    useEffect(() => {
+        // If low bandwidth mode changes, update resolution if user hasn't generated yet
+        if (!isLoading && !videoUrl) {
+           setResolution(lowBandwidth ? '480p' : '720p');
+        }
+    }, [lowBandwidth, isLoading, videoUrl]);
+
 
     useEffect(() => {
         if (isLoading) {
@@ -203,7 +215,7 @@ const VideoGenerator: React.FC = () => {
                             disabled={isLoading}
                             className="w-full p-3 bg-surface-input border-2 border-border rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition"
                         >
-                            {VIDEO_RESOLUTIONS.map(res => <option key={res} value={res}>{res}</option>)}
+                            {VIDEO_RESOLUTIONS.map(res => <option key={res.value} value={res.value}>{res.name}</option>)}
                         </select>
                     </div>
                 </div>
@@ -344,7 +356,7 @@ const VideoGenerator: React.FC = () => {
                         {/* Info & Actions */}
                         <div className="flex items-center space-x-4">
                             <span className="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-surface/50 text-text-primary border border-border">
-                                {resolution}
+                                {VIDEO_RESOLUTIONS.find(r => r.value === resolution)?.name.split(' ')[1].replace('(', '').replace(')', '') || resolution}
                             </span>
 
                             <button

@@ -1,6 +1,5 @@
 import { GoogleGenAI, Modality } from "@google/genai";
-// FIX: Added ImageResolution to the import from types.ts.
-import { ImageAspectRatio, VideoAspectRatio, VideoResolution, AudioVoice, ImageResolution } from '../types';
+import { ImageAspectRatio, VideoAspectRatio, VideoResolution, AudioVoice, ImageResolution, ScriptLanguage, ScriptTone, ScriptPlatform, MusicGenre, MusicMood, MusicInstrument } from '../types';
 
 
 // A new instance is created before each API call in the components to ensure the latest API key is used.
@@ -44,17 +43,26 @@ export const generateImage = async (options: ImageGenerationOptions): Promise<st
 };
 
 
-export const generateAudio = async (prompt: string, voice: AudioVoice): Promise<string> => {
+export interface AudioGenerationOptions {
+  prompt: string;
+  voice: AudioVoice;
+  rate?: number;
+  pitch?: number;
+}
+
+export const generateAudio = async (options: AudioGenerationOptions): Promise<string> => {
     const ai = getAiClient();
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash-preview-tts",
-      contents: [{ parts: [{ text: prompt }] }],
+      contents: [{ parts: [{ text: options.prompt }] }],
       config: {
         responseModalities: [Modality.AUDIO],
         speechConfig: {
             voiceConfig: {
-              prebuiltVoiceConfig: { voiceName: voice },
+              prebuiltVoiceConfig: { voiceName: options.voice === 'CLONED_VOICE' ? 'Zephyr' : options.voice },
             },
+            speakingRate: options.rate ?? 1.0,
+            pitch: options.pitch ?? 0.0,
         },
       },
     });
@@ -115,3 +123,107 @@ export const generateVideo = async (options: VideoGenerationOptions): Promise<st
         reader.readAsDataURL(videoBlob);
     });
 }
+
+export interface ScriptGenerationOptions {
+  prompt: string;
+  language: ScriptLanguage;
+  tone: ScriptTone;
+  platform: ScriptPlatform;
+}
+
+export const generateScript = async (options: ScriptGenerationOptions): Promise<string> => {
+  const ai = getAiClient();
+  const fullPrompt = `
+    You are an expert scriptwriter specializing in content for African audiences.
+    Your task is to generate a script based on the following specifications.
+    The script should be properly formatted with character names in all caps, followed by their dialogue. Actions and scene descriptions should be in parentheses.
+
+    - **Topic/Idea:** "${options.prompt}"
+    - **Language:** "${options.language}". If the language is Pidgin English, use it naturally. For other languages, write the script primarily in that language with cultural nuances.
+    - **Tone:** "${options.tone}"
+    - **Platform:** "${options.platform}"
+
+    Please generate the complete script now.
+  `;
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: fullPrompt,
+  });
+  
+  const text = response.text;
+  if (text) {
+    return text;
+  }
+  
+  throw new Error('No script data found in response');
+};
+
+export interface MusicGenerationOptions {
+    prompt: string;
+    genre: MusicGenre;
+    mood: MusicMood;
+    instrument: MusicInstrument;
+}
+
+export const generateMusic = async (options: MusicGenerationOptions): Promise<string> => {
+    const ai = getAiClient();
+    const fullPrompt = `
+        Generate a high-quality, royalty-free instrumental music track.
+        The track should be approximately 30 seconds long and suitable for use as background music in content.
+        Do not include any speech or vocals.
+
+        **Genre:** ${options.genre}
+        **Mood:** ${options.mood}
+        **Featured Instrument:** ${options.instrument}
+        **Description:** ${options.prompt}
+    `;
+
+    const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash-preview-tts",
+        contents: [{ parts: [{ text: fullPrompt }] }],
+        config: {
+            responseModalities: [Modality.AUDIO],
+        },
+    });
+
+    const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+    if (base64Audio) {
+        return base64Audio;
+    }
+
+    throw new Error('No music data found in response. The model may not have been able to generate audio for this prompt.');
+};
+
+export interface CulturalInspirationOptions {
+  topic: string;
+  language: ScriptLanguage;
+}
+
+export const getCulturalInspiration = async (options: CulturalInspirationOptions): Promise<string> => {
+  const ai = getAiClient();
+  const prompt = `
+    As a cultural expert for the African continent, provide creative inspiration for a script.
+    The script's main topic is: "${options.topic}".
+    The primary language and cultural context is: "${options.language}".
+
+    Provide 3-5 concrete ideas formatted in Markdown. For each idea, include:
+    1.  **A relevant local proverb or saying** (with a brief explanation).
+    2.  **A suggestion based on folklore or a historical event** that connects to the topic.
+    3.  **A recommendation for a type of local music or sound** that would enhance the story's mood.
+
+    Keep the suggestions concise, creative, and directly applicable to a storyteller or scriptwriter.
+  `;
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: prompt,
+  });
+
+  const text = response.text;
+  if (text) {
+    return text;
+  }
+  
+  throw new Error('Could not get cultural inspiration at this time.');
+};

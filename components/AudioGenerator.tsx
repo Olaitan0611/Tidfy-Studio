@@ -8,18 +8,24 @@ import { AudioVoice, AUDIO_VOICES } from '../types';
 interface AudioHistoryItem {
     audioData: string;
     prompt: string;
-    voice: AudioVoice;
+    voice: string; // Store the full voice name
+    rate: number;
+    pitch: number;
 }
 
 const LOCAL_STORAGE_KEY = 'tidfy-audio-history';
 const CLONED_VOICE_FLAG_KEY = 'tidfy-voice-cloned';
 const CLONED_VOICE_NAME_KEY = 'tidfy-voice-name';
+const CLONE_VOICE_NAME = '✨ Clone My Voice';
 
 
 const AudioGenerator: React.FC = () => {
     const [prompt, setPrompt] = useState<string>('');
-    const [voice, setVoice] = useState<AudioVoice>('Zephyr');
+    const [voice, setVoice] = useState<string>('Chidinma (Nigerian Female)'); // Store full name
+    const [rate, setRate] = useState<number>(1);
+    const [pitch, setPitch] = useState<number>(0);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isPreviewing, setIsPreviewing] = useState<boolean>(false);
     const [audioData, setAudioData] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [history, setHistory] = useState<AudioHistoryItem[]>([]);
@@ -106,7 +112,14 @@ const AudioGenerator: React.FC = () => {
             setError('Please enter some text to generate audio.');
             return;
         }
-        if (voice === 'CLONED_VOICE' && !isVoiceCloned) {
+        
+        const selectedVoiceOption = AUDIO_VOICES.find(v => v.name === voice);
+        if (!selectedVoiceOption) {
+            setError("Invalid voice selected. Please choose another.");
+            return;
+        }
+        
+        if (selectedVoiceOption.value === 'CLONED_VOICE' && !isVoiceCloned) {
             setError('Please upload an audio sample to clone a voice first.');
             return;
         }
@@ -117,13 +130,12 @@ const AudioGenerator: React.FC = () => {
         stopAudio();
         
         try {
-            // Use a default prebuilt voice for the cloned voice generation as a placeholder
-            const generationVoice = voice === 'CLONED_VOICE' ? 'Zephyr' : voice;
-            const data = await generateAudio(prompt, generationVoice);
+            const generationVoice = selectedVoiceOption.value;
+            const data = await generateAudio({ prompt, voice: generationVoice, rate, pitch });
             setAudioData(data);
             
             setHistory(prev => {
-                const newHistory = [{ audioData: data, prompt, voice }, ...prev].slice(0, 20);
+                const newHistory = [{ audioData: data, prompt, voice, rate, pitch }, ...prev].slice(0, 20);
                 localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newHistory));
                 return newHistory;
             });
@@ -132,6 +144,37 @@ const AudioGenerator: React.FC = () => {
             setError(err.message || 'An unknown error occurred while generating audio.');
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handlePreview = async () => {
+        const selectedVoiceOption = AUDIO_VOICES.find(v => v.name === voice);
+        if (!selectedVoiceOption) {
+            setError("Invalid voice selected.");
+            return;
+        }
+        if (selectedVoiceOption.value === 'CLONED_VOICE' && !isVoiceCloned) {
+            setError('Please upload a sample to preview a cloned voice.');
+            return;
+        }
+
+        setIsPreviewing(true);
+        setError(null);
+        
+        try {
+            const previewText = "Hello, this is a preview of my voice at the current settings.";
+            const generationVoice = selectedVoiceOption.value;
+            const data = await generateAudio({ 
+                prompt: previewText, 
+                voice: generationVoice, 
+                rate, 
+                pitch 
+            });
+            await playAudio(data, 'main');
+        } catch (err: any) {
+            setError(err.message || 'Could not generate preview.');
+        } finally {
+            setIsPreviewing(false);
         }
     };
     
@@ -152,6 +195,8 @@ const AudioGenerator: React.FC = () => {
     const handleHistoryReuse = (item: AudioHistoryItem) => {
         setPrompt(item.prompt);
         setVoice(item.voice);
+        setRate(item.rate);
+        setPitch(item.pitch);
     };
 
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -176,7 +221,7 @@ const AudioGenerator: React.FC = () => {
         setClonedSampleName(null);
         localStorage.removeItem(CLONED_VOICE_FLAG_KEY);
         localStorage.removeItem(CLONED_VOICE_NAME_KEY);
-        setVoice('Zephyr'); // Revert to a default voice
+        setVoice('Chidinma (Nigerian Female)'); // Revert to a default voice
     };
     
     return (
@@ -190,8 +235,8 @@ const AudioGenerator: React.FC = () => {
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
                         placeholder="Enter text to convert to speech..."
-                        className="w-full h-36 p-4 bg-surface-input border-2 border-border rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition resize-none text-lg"
-                        disabled={isLoading || isCloning}
+                        className="w-full h-28 p-4 bg-surface-input border-2 border-border rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition resize-none text-base"
+                        disabled={isLoading || isCloning || isPreviewing}
                     />
                 </div>
                  <div>
@@ -199,15 +244,51 @@ const AudioGenerator: React.FC = () => {
                     <select
                         id="voice-audio"
                         value={voice}
-                        onChange={(e) => setVoice(e.target.value as AudioVoice)}
-                        disabled={isLoading || isCloning}
+                        onChange={(e) => setVoice(e.target.value)}
+                        disabled={isLoading || isCloning || isPreviewing}
                         className="w-full p-3 bg-surface-input border-2 border-border rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition"
                     >
-                        {AUDIO_VOICES.map(v => <option key={v.value} value={v.value}>{v.name}</option>)}
+                        {AUDIO_VOICES.map(v => <option key={v.name} value={v.name}>{v.name}</option>)}
                     </select>
                 </div>
 
-                {voice === 'CLONED_VOICE' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label htmlFor="rate-audio" className="block text-sm font-medium text-text-primary mb-2">
+                            Speech Rate <span className="text-text-tertiary font-normal">({rate.toFixed(1)}x)</span>
+                        </label>
+                        <input
+                            id="rate-audio"
+                            type="range"
+                            min="0.5"
+                            max="2.0"
+                            step="0.1"
+                            value={rate}
+                            onChange={(e) => setRate(parseFloat(e.target.value))}
+                            disabled={isLoading || isCloning || isPreviewing}
+                            className="w-full h-2 bg-surface rounded-lg appearance-none cursor-pointer accent-secondary"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="pitch-audio" className="block text-sm font-medium text-text-primary mb-2">
+                            Pitch <span className="text-text-tertiary font-normal">({pitch > 0 ? '+' : ''}{pitch.toFixed(1)})</span>
+                        </label>
+                        <input
+                            id="pitch-audio"
+                            type="range"
+                            min="-20"
+                            max="20"
+                            step="1"
+                            value={pitch}
+                            onChange={(e) => setPitch(parseFloat(e.target.value))}
+                            disabled={isLoading || isCloning || isPreviewing}
+                            className="w-full h-2 bg-surface rounded-lg appearance-none cursor-pointer accent-secondary"
+                        />
+                    </div>
+                </div>
+
+
+                {voice === CLONE_VOICE_NAME && (
                     <div className="p-4 bg-surface-input/50 rounded-lg border-2 border-dashed border-border transition-all duration-300">
                         {!isVoiceCloned && !isCloning && (
                             <div className="text-center">
@@ -252,14 +333,24 @@ const AudioGenerator: React.FC = () => {
                     </div>
                 )}
 
-                 <button
-                    onClick={handleGenerate}
-                    disabled={isLoading || isCloning}
-                    className="flex items-center justify-center w-full bg-secondary hover:bg-secondary-hover disabled:bg-secondary/20 disabled:cursor-not-allowed text-text-on-secondary font-bold py-3 px-8 rounded-lg transition-all duration-300"
-                >
-                    {isLoading ? <Spinner /> : <SparklesIcon className="w-6 h-6 mr-2" />}
-                    {isLoading ? 'Synthesizing Audio...' : isCloning ? 'Waiting for Clone...' : 'Generate Audio'}
-                </button>
+                 <div className="flex flex-col sm:flex-row gap-4">
+                    <button
+                        onClick={handlePreview}
+                        disabled={isLoading || isCloning || isPreviewing}
+                        className="flex items-center justify-center w-full sm:w-1/3 border-2 border-secondary hover:bg-secondary/10 disabled:border-secondary/20 disabled:text-text-tertiary disabled:cursor-not-allowed text-secondary font-bold py-3 px-4 rounded-lg transition-all duration-300"
+                    >
+                        {isPreviewing ? <Spinner className="w-6 h-6" /> : <SpeakerWaveIcon className="w-6 h-6 mr-2" />}
+                        {isPreviewing ? 'Generating...' : 'Preview'}
+                    </button>
+                    <button
+                        onClick={handleGenerate}
+                        disabled={isLoading || isCloning || isPreviewing}
+                        className="flex items-center justify-center w-full sm:w-2/3 bg-secondary hover:bg-secondary-hover disabled:bg-secondary/20 disabled:cursor-not-allowed text-text-on-secondary font-bold py-3 px-8 rounded-lg transition-all duration-300"
+                    >
+                        {isLoading ? <Spinner /> : <SparklesIcon className="w-6 h-6 mr-2" />}
+                        {isLoading ? 'Synthesizing...' : 'Generate Audio'}
+                    </button>
+                </div>
             </div>
             {/* Right Panel: History & Output */}
             <div className="space-y-6">
@@ -280,22 +371,22 @@ const AudioGenerator: React.FC = () => {
                 {history.length > 0 ? (
                     <div className="max-h-80 overflow-y-auto space-y-3 pr-2 bg-surface-input/50 p-4 rounded-lg">
                         {history.map((item, index) => {
-                            const voiceName = item.voice === 'CLONED_VOICE'
+                            const voiceName = item.voice === CLONE_VOICE_NAME
                                 ? 'Cloned Voice'
-                                : AUDIO_VOICES.find(v => v.value === item.voice)?.name;
+                                : item.voice;
 
                             return (
                                 <div key={index} className="bg-surface/50 p-3 rounded-lg flex items-center justify-between">
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm text-text-primary truncate font-medium" title={item.prompt}>{item.prompt}</p>
-                                        <p className="text-xs text-text-secondary">{voiceName}</p>
+                                        <p className="text-xs text-text-secondary">{`${voiceName} · Rate: ${item.rate.toFixed(1)} · Pitch: ${item.pitch.toFixed(1)}`}</p>
                                     </div>
                                     <div className="flex items-center ml-4">
                                         <button
                                             onClick={() => handleHistoryReuse(item)}
                                             className="p-2 text-text-secondary hover:text-text-primary transition-colors"
                                             title="Reuse settings"
-                                            disabled={isCloning}
+                                            disabled={isCloning || isPreviewing}
                                         >
                                             <ArrowPathIcon className="w-5 h-5" />
                                         </button>
@@ -303,7 +394,7 @@ const AudioGenerator: React.FC = () => {
                                             onClick={() => handleHistoryPlay(item, index)}
                                             className="p-2 text-text-secondary hover:text-text-primary transition-colors"
                                             title="Play audio"
-                                            disabled={isCloning}
+                                            disabled={isCloning || isPreviewing}
                                         >
                                             {activePlayingSource === 'history' && activeHistoryIndex === index ? (
                                                 <PauseIcon className="w-5 h-5 text-secondary" />
