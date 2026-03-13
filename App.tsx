@@ -14,6 +14,8 @@ import WelcomeScreen from './components/WelcomeScreen';
 import LoginModal from './components/LoginModal';
 import SettingsModal from './components/SettingsModal';
 import { VideoCameraIcon, PhotoIcon, SpeakerWaveIcon, DocumentTextIcon, RectangleStackIcon, MusicalNoteIcon, UserGroupIcon, ChartBarIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
+import { auth } from './firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 type Language = 'en' | 'sw';
 
@@ -22,6 +24,7 @@ const App: React.FC = () => {
   const [showWelcome, setShowWelcome] = useState<boolean>(true);
   const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [authReady, setAuthReady] = useState<boolean>(false);
 
   // New state for settings and accessibility
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
@@ -30,16 +33,35 @@ const App: React.FC = () => {
   const [isOnline, setIsOnline] = useState<boolean>(() => navigator.onLine);
 
   useEffect(() => {
-    // Session check could be added here in a real app
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // If email verification is required, we can check user.emailVerified here
+        // But for Google login, emailVerified is true.
+        // For email signup, we enforce it in LoginModal.
+        setIsAuthenticated(true);
+        setShowLoginModal(false);
+      } else {
+        setIsAuthenticated(false);
+        if (!showWelcome) {
+          setShowLoginModal(true);
+        }
+      }
+      setAuthReady(true);
+    });
+
+    return () => unsubscribe();
+  }, [showWelcome]);
+
+  useEffect(() => {
     const welcomeTimer = setTimeout(() => {
         setShowWelcome(false);
-        if (!isAuthenticated) {
+        if (authReady && !isAuthenticated) {
             setShowLoginModal(true);
         }
     }, 10000); // Welcome screen lasts for 10 seconds
 
     return () => clearTimeout(welcomeTimer);
-  }, [isAuthenticated]);
+  }, [authReady, isAuthenticated]);
   
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -53,8 +75,7 @@ const App: React.FC = () => {
   }, []);
 
   const handleLogin = () => {
-    setIsAuthenticated(true);
-    setShowLoginModal(false);
+    // Handled by onAuthStateChanged
   };
   
   const translations = {
@@ -90,6 +111,8 @@ const App: React.FC = () => {
 
 
   const renderContent = () => {
+    if (!isAuthenticated) return null;
+    
     switch (activeTab) {
       case Tab.VIDEO:
         return <VideoGenerator lowBandwidth={lowBandwidth} />;
@@ -132,7 +155,7 @@ const App: React.FC = () => {
 
   return (
     <>
-      {showLoginModal && <LoginModal onLogin={handleLogin} />}
+      {(!isAuthenticated || showLoginModal) && <LoginModal onLogin={handleLogin} />}
       <SettingsModal 
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
@@ -141,7 +164,7 @@ const App: React.FC = () => {
         lowBandwidth={lowBandwidth}
         setLowBandwidth={setLowBandwidth}
       />
-      <div className={`min-h-screen text-text-primary font-sans flex flex-col transition-filter duration-500 ${showLoginModal || isSettingsOpen ? 'blur-sm' : ''}`}>
+      <div className={`min-h-screen text-text-primary font-sans flex flex-col transition-filter duration-500 ${(!isAuthenticated || showLoginModal) || isSettingsOpen ? 'blur-sm' : ''}`}>
         <Header onSettingsClick={() => setIsSettingsOpen(true)} isOnline={isOnline} />
         <main className="flex-grow p-4 sm:p-6 md:p-8 max-w-screen-2xl mx-auto w-full">
           <div className="bg-surface/50 backdrop-blur-sm border border-border rounded-xl shadow-2xl p-4 sm:p-6 md:p-8">
@@ -154,6 +177,7 @@ const App: React.FC = () => {
                       <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
+                      disabled={!isAuthenticated}
                       className={`
                           w-full flex-1 group inline-flex items-center justify-center py-3 px-2 rounded-md font-medium text-sm sm:text-base transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-secondary
                           ${
@@ -161,6 +185,7 @@ const App: React.FC = () => {
                               ? 'bg-secondary text-text-on-secondary shadow'
                               : 'text-text-secondary hover:bg-surface-input/50 hover:text-text-primary'
                           }
+                          ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}
                       `}
                       >
                       <tab.icon className="-ml-0.5 mr-2 h-5 w-5" aria-hidden="true" />

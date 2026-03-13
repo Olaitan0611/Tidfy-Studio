@@ -1,6 +1,7 @@
 import React from 'react';
 import Logo from './Logo';
-import { Cog6ToothIcon, WifiIcon, SignalSlashIcon } from '@heroicons/react/24/outline';
+import { Cog6ToothIcon, WifiIcon, SignalSlashIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
+import { auth, signOut } from '../firebase';
 
 interface HeaderProps {
   onSettingsClick: () => void;
@@ -8,6 +9,14 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ onSettingsClick, isOnline }) => {
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
   return (
     <header className="sticky top-0 z-10 bg-background/50 backdrop-blur-lg border-b border-border/50">
       <div className="max-w-screen-2xl mx-auto py-3 px-4 sm:px-6 md:px-8 flex justify-between items-center">
@@ -31,6 +40,16 @@ const Header: React.FC<HeaderProps> = ({ onSettingsClick, isOnline }) => {
             >
                 <Cog6ToothIcon className="h-6 w-6" />
             </button>
+            {auth.currentUser && (
+              <button
+                  onClick={handleSignOut}
+                  className="p-2 rounded-full text-text-secondary hover:text-red-400 hover:bg-surface-input transition-colors"
+                  aria-label="Sign out"
+                  title="Sign out"
+              >
+                  <ArrowRightOnRectangleIcon className="h-6 w-6" />
+              </button>
+            )}
         </div>
       </div>
     </header>
