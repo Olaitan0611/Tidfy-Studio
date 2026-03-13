@@ -3,7 +3,7 @@ import { ImageAspectRatio, VideoAspectRatio, VideoResolution, AudioVoice, ImageR
 
 
 // A new instance is created before each API call in the components to ensure the latest API key is used.
-const getAiClient = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
+const getAiClient = () => new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 
 export interface ImageGenerationOptions {
   prompt: string;
@@ -61,8 +61,6 @@ export const generateAudio = async (options: AudioGenerationOptions): Promise<st
             voiceConfig: {
               prebuiltVoiceConfig: { voiceName: options.voice === 'CLONED_VOICE' ? 'Zephyr' : options.voice },
             },
-            speakingRate: options.rate ?? 1.0,
-            pitch: options.pitch ?? 0.0,
         },
       },
     });
@@ -103,7 +101,7 @@ export const generateVideo = async (options: VideoGenerationOptions): Promise<st
         throw new Error("Video generation failed, no download link found.");
     }
     
-    const videoResponse = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+    const videoResponse = await fetch(`${downloadLink}&key=${import.meta.env.VITE_GEMINI_API_KEY}`);
     if (!videoResponse.ok) {
         throw new Error(`Failed to download video: ${videoResponse.statusText}`);
     }

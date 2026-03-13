@@ -1,0 +1,9 @@
+name = "tidfy-worker"
+main = "worker/index.ts"
+compatibility_date = "2024-01-01"
+
+[vars]
+API_URL = "https://api.tidfy.com"
+
+[observability]
+enabled = true

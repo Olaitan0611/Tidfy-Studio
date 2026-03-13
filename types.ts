@@ -1,5 +1,14 @@
 
 
+declare global {
+  interface Window {
+    aistudio?: {
+      openSelectKey: () => Promise<void>;
+      hasSelectedApiKey: () => Promise<boolean>;
+    };
+  }
+}
+
 export enum Tab {
   VIDEO = 'video',
   IMAGE = 'image',
