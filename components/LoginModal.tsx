@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { auth, googleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword } from '../firebase';
+import { auth, googleProvider, appleProvider, microsoftProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword } from '../firebase';
 import { updateProfile, sendEmailVerification } from 'firebase/auth';
 
 interface LoginModalProps {
@@ -24,6 +24,32 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLogin }) => {
             onLogin();
         } catch (err: any) {
             setError(err.message || 'Failed to log in with Google.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAppleLogin = async () => {
+        try {
+            setError('');
+            setLoading(true);
+            await signInWithPopup(auth, appleProvider);
+            onLogin();
+        } catch (err: any) {
+            setError(err.message || 'Failed to log in with Apple.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleMicrosoftLogin = async () => {
+        try {
+            setError('');
+            setLoading(true);
+            await signInWithPopup(auth, microsoftProvider);
+            onLogin();
+        } catch (err: any) {
+            setError(err.message || 'Failed to log in with Microsoft.');
         } finally {
             setLoading(false);
         }
@@ -89,7 +115,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLogin }) => {
             {isSignUp ? 'Create Your Account' : 'Welcome Back'}
         </h2>
         <p className="text-text-secondary text-center mb-6">
-            Please sign up or log in with Gmail or your email address before using the app.
+            Please sign up or log in with Google, Apple, Microsoft, or Email before starting or accessing any project.
         </p>
 
         {error && <div className="bg-red-500/10 border border-red-500/50 text-red-500 p-3 rounded-lg mb-6 text-sm">{error}</div>}
@@ -97,7 +123,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLogin }) => {
         <button
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 bg-white text-gray-800 hover:bg-gray-50 border border-gray-300 font-medium py-3 px-8 rounded-lg transition-all duration-300 mb-6 disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-3 bg-white text-gray-800 hover:bg-gray-50 border border-gray-300 font-medium py-3 px-8 rounded-lg transition-all duration-300 mb-3 disabled:opacity-50"
         >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -105,7 +131,32 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLogin }) => {
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
             </svg>
-            Continue with Gmail
+            Continue with Google
+        </button>
+
+        <button
+            onClick={handleAppleLogin}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-3 bg-black text-white hover:bg-gray-900 border border-transparent font-medium py-3 px-8 rounded-lg transition-all duration-300 mb-3 disabled:opacity-50"
+        >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.62-1.48 3.6-2.935 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.534 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.56-1.702z"/>
+            </svg>
+            Continue with Apple
+        </button>
+
+        <button
+            onClick={handleMicrosoftLogin}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-3 bg-white text-gray-800 hover:bg-gray-50 border border-gray-300 font-medium py-3 px-8 rounded-lg transition-all duration-300 mb-6 disabled:opacity-50"
+        >
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
+                <path fill="#f35325" d="M1 1h10.5v10.5H1z"/>
+                <path fill="#81bc06" d="M12.5 1H23v10.5H12.5z"/>
+                <path fill="#05a6f0" d="M1 12.5h10.5V23H1z"/>
+                <path fill="#ffba08" d="M12.5 12.5H23V23H12.5z"/>
+            </svg>
+            Continue with Microsoft
         </button>
 
         <div className="relative flex items-center py-2 mb-6">
