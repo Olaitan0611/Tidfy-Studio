@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { auth, googleProvider, appleProvider, microsoftProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword } from '../firebase';
+import { auth, googleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword } from '../firebase';
 import { updateProfile, sendEmailVerification } from 'firebase/auth';
 
 interface LoginModalProps {
@@ -29,32 +29,6 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLogin }) => {
         }
     };
 
-    const handleAppleLogin = async () => {
-        try {
-            setError('');
-            setLoading(true);
-            await signInWithPopup(auth, appleProvider);
-            onLogin();
-        } catch (err: any) {
-            setError(err.message || 'Failed to log in with Apple.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleMicrosoftLogin = async () => {
-        try {
-            setError('');
-            setLoading(true);
-            await signInWithPopup(auth, microsoftProvider);
-            onLogin();
-        } catch (err: any) {
-            setError(err.message || 'Failed to log in with Microsoft.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
@@ -69,9 +43,6 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLogin }) => {
                 await updateProfile(userCredential.user, { displayName: name });
                 await sendEmailVerification(userCredential.user);
                 setVerificationSent(true);
-                // We don't call onLogin() immediately because they need to verify their email,
-                // but we can let them in or ask them to verify. The prompt says "email_verification: true".
-                // Let's just show a message.
             } else {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 if (!userCredential.user.emailVerified) {
@@ -80,7 +51,11 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLogin }) => {
                 onLogin();
             }
         } catch (err: any) {
-            setError(err.message || 'Authentication failed.');
+            if (err.code === 'auth/operation-not-allowed') {
+                setError('Email/Password authentication is not enabled. Please enable it in your Firebase Console.');
+            } else {
+                setError(err.message || 'Authentication failed.');
+            }
         } finally {
             setLoading(false);
         }
@@ -115,7 +90,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLogin }) => {
             {isSignUp ? 'Create Your Account' : 'Welcome Back'}
         </h2>
         <p className="text-text-secondary text-center mb-6">
-            Please sign up or log in with Google, Apple, Microsoft, or Email before starting or accessing any project.
+            Please sign up or log in with Google or your email address to continue.
         </p>
 
         {error && <div className="bg-red-500/10 border border-red-500/50 text-red-500 p-3 rounded-lg mb-6 text-sm">{error}</div>}
@@ -123,7 +98,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLogin }) => {
         <button
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 bg-white text-gray-800 hover:bg-gray-50 border border-gray-300 font-medium py-3 px-8 rounded-lg transition-all duration-300 mb-3 disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-3 bg-white text-gray-800 hover:bg-gray-50 border border-gray-300 font-medium py-3 px-8 rounded-lg transition-all duration-300 mb-6 disabled:opacity-50"
         >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -134,38 +109,13 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLogin }) => {
             Continue with Google
         </button>
 
-        <button
-            onClick={handleAppleLogin}
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-3 bg-black text-white hover:bg-gray-900 border border-transparent font-medium py-3 px-8 rounded-lg transition-all duration-300 mb-3 disabled:opacity-50"
-        >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.62-1.48 3.6-2.935 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.534 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.56-1.702z"/>
-            </svg>
-            Continue with Apple
-        </button>
-
-        <button
-            onClick={handleMicrosoftLogin}
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-3 bg-white text-gray-800 hover:bg-gray-50 border border-gray-300 font-medium py-3 px-8 rounded-lg transition-all duration-300 mb-6 disabled:opacity-50"
-        >
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
-                <path fill="#f35325" d="M1 1h10.5v10.5H1z"/>
-                <path fill="#81bc06" d="M12.5 1H23v10.5H12.5z"/>
-                <path fill="#05a6f0" d="M1 12.5h10.5V23H1z"/>
-                <path fill="#ffba08" d="M12.5 12.5H23V23H12.5z"/>
-            </svg>
-            Continue with Microsoft
-        </button>
-
         <div className="relative flex items-center py-2 mb-6">
             <div className="flex-grow border-t border-border"></div>
             <span className="flex-shrink-0 mx-4 text-text-tertiary text-sm">Or continue with email</span>
             <div className="flex-grow border-t border-border"></div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 text-left">
             {isSignUp && (
                  <div>
                     <label htmlFor="name" className="block text-sm font-medium text-text-primary mb-1">Full Name</label>

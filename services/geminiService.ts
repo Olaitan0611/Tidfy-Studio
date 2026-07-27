@@ -193,6 +193,44 @@ export const generateMusic = async (options: MusicGenerationOptions): Promise<st
     throw new Error('No music data found in response. The model may not have been able to generate audio for this prompt.');
 };
 
+export interface AfricanSongOptions {
+    lyrics: string;
+    country: string;
+    language: string;
+    style: string;
+    variation: number;
+}
+
+export const generateAfricanSongSample = async (options: AfricanSongOptions): Promise<string> => {
+    const ai = getAiClient();
+    const fullPrompt = `
+        Create an audio sample for an African song.
+        Country: ${options.country}
+        Language: ${options.language}
+        Style: ${options.style}
+        Variation: ${options.variation}
+        Lyrics:
+        ${options.lyrics}
+
+        Please generate an interesting chanted or spoken rendition of these lyrics in the specified style and language. Make it sound unique for variation ${options.variation}.
+    `;
+
+    const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash-preview-tts",
+        contents: [{ parts: [{ text: fullPrompt }] }],
+        config: {
+            responseModalities: [Modality.AUDIO],
+        },
+    });
+
+    const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+    if (base64Audio) {
+        return base64Audio;
+    }
+
+    throw new Error('No audio data found in response.');
+};
+
 export interface CulturalInspirationOptions {
   topic: string;
   language: ScriptLanguage;

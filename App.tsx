@@ -7,13 +7,14 @@ import AudioGenerator from './components/AudioGenerator';
 import ScriptGenerator from './components/ScriptGenerator';
 import ContentLibrary from './components/ContentLibrary';
 import MusicGenerator from './components/MusicGenerator';
+import AfricanSongGenerator from './components/AfricanSongGenerator';
 import CreatorNetwork from './components/CreatorNetwork';
 import GrowthAnalytics from './components/GrowthAnalytics';
 import LearningHub from './components/LearningHub';
 import WelcomeScreen from './components/WelcomeScreen';
 import LoginModal from './components/LoginModal';
 import SettingsModal from './components/SettingsModal';
-import { VideoCameraIcon, PhotoIcon, SpeakerWaveIcon, DocumentTextIcon, RectangleStackIcon, MusicalNoteIcon, UserGroupIcon, ChartBarIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
+import { VideoCameraIcon, PhotoIcon, SpeakerWaveIcon, DocumentTextIcon, RectangleStackIcon, MusicalNoteIcon, UserGroupIcon, ChartBarIcon, AcademicCapIcon, GlobeAltIcon } from '@heroicons/react/24/outline';
 import { auth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
@@ -86,6 +87,7 @@ const App: React.FC = () => {
       imageStudio: 'Image Studio',
       audioStudio: 'Audio Studio',
       musicStudio: 'Music Studio',
+      africanSong: 'African Song',
       scriptStudio: 'Script Studio',
       network: 'Network',
       growth: 'Growth',
@@ -99,6 +101,7 @@ const App: React.FC = () => {
       imageStudio: 'Studio ya Picha',
       audioStudio: 'Studio ya Sauti',
       musicStudio: 'Studio ya Muziki',
+      africanSong: 'Nyimbo za Kiafrika',
       scriptStudio: 'Studio ya Hati',
       network: 'Mtandao',
       growth: 'Ukuaji',
@@ -124,6 +127,8 @@ const App: React.FC = () => {
         return <ScriptGenerator />;
       case Tab.MUSIC:
         return <MusicGenerator />;
+      case Tab.AFRICAN_SONG:
+        return <AfricanSongGenerator />;
       case Tab.NETWORK:
         return <CreatorNetwork />;
       case Tab.GROWTH:
@@ -142,6 +147,7 @@ const App: React.FC = () => {
     { id: Tab.IMAGE, name: t('imageStudio'), icon: PhotoIcon },
     { id: Tab.AUDIO, name: t('audioStudio'), icon: SpeakerWaveIcon },
     { id: Tab.MUSIC, name: t('musicStudio'), icon: MusicalNoteIcon },
+    { id: Tab.AFRICAN_SONG, name: t('africanSong'), icon: GlobeAltIcon },
     { id: Tab.SCRIPT, name: t('scriptStudio'), icon: DocumentTextIcon },
     { id: Tab.NETWORK, name: t('network'), icon: UserGroupIcon },
     { id: Tab.GROWTH, name: t('growth'), icon: ChartBarIcon },
