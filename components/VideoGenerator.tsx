@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import Spinner from './Spinner';
 import MusicGenerationModal from './MusicGenerationModal';
 import { generateVideo, VideoGenerationOptions } from '../services/geminiService';
-import { SparklesIcon, ExclamationTriangleIcon, VideoCameraIcon, ArrowDownTrayIcon, SpeakerWaveIcon, SpeakerXMarkIcon, ArrowPathIcon, TrashIcon, ChevronDownIcon, MusicalNoteIcon, CloudArrowUpIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { SparklesIcon, ExclamationTriangleIcon, VideoCameraIcon, SpeakerWaveIcon, SpeakerXMarkIcon, ArrowPathIcon, TrashIcon, ChevronDownIcon, MusicalNoteIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { CalabashDownloadIcon, WovenBasketUploadIcon } from './CustomIcons';
 import { VideoAspectRatio, VideoResolution, VIDEO_ASPECT_RATIOS, VIDEO_RESOLUTIONS } from '../types';
 
 const loadingMessages = [
@@ -246,7 +247,7 @@ const VideoGenerator: React.FC<VideoGeneratorProps> = ({ lowBandwidth }) => {
                                 </div>
                                 <div className="flex gap-2 pt-2 border-t border-border">
                                     <input type="file" ref={musicUploadRef} onChange={handleMusicUpload} hidden accept="audio/*" />
-                                    <button onClick={() => musicUploadRef.current?.click()} className="w-1/2 text-sm flex items-center justify-center bg-surface hover:bg-border font-semibold p-2 rounded-md transition-colors"><CloudArrowUpIcon className="w-5 h-5 mr-2"/>Upload</button>
+                                    <button onClick={() => musicUploadRef.current?.click()} className="w-1/2 text-sm flex items-center justify-center bg-surface hover:bg-border font-semibold p-2 rounded-md transition-colors"><WovenBasketUploadIcon className="w-5 h-5 mr-2"/>Upload</button>
                                     <button onClick={() => setIsMusicModalOpen(true)} className="w-1/2 text-sm flex items-center justify-center bg-surface hover:bg-border font-semibold p-2 rounded-md transition-colors"><SparklesIcon className="w-5 h-5 mr-2"/>Generate AI</button>
                                 </div>
                             </>
@@ -293,7 +294,7 @@ const VideoGenerator: React.FC<VideoGeneratorProps> = ({ lowBandwidth }) => {
                             onClick={() => handleDownload('video')}
                             className="w-full flex items-center justify-center bg-secondary hover:bg-secondary-hover text-text-on-secondary font-bold py-3 px-6 rounded-lg transition-all duration-300 text-base flex-grow"
                         >
-                            <ArrowDownTrayIcon className="w-6 h-6 mr-2" />
+                            <CalabashDownloadIcon className="w-6 h-6 mr-2" />
                             Download Video
                         </button>
                         {backgroundMusic?.url && (

@@ -4,9 +4,11 @@ import { updateProfile, sendEmailVerification } from 'firebase/auth';
 
 interface LoginModalProps {
   onLogin: () => void;
+  onClose?: () => void;
+  isDownloadPrompt?: boolean;
 }
 
-const LoginModal: React.FC<LoginModalProps> = ({ onLogin }) => {
+const LoginModal: React.FC<LoginModalProps> = ({ onLogin, onClose, isDownloadPrompt = false }) => {
     const [isSignUp, setIsSignUp] = useState(true);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -85,12 +87,24 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLogin }) => {
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-surface border border-border rounded-2xl shadow-2xl w-full max-w-md p-8 animate-slideUpFadeIn max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface border border-border rounded-2xl shadow-2xl w-full max-w-md p-8 animate-slideUpFadeIn max-h-[90vh] overflow-y-auto relative">
+        {onClose && (
+            <button 
+                onClick={onClose}
+                className="absolute top-4 right-4 text-text-tertiary hover:text-text-primary"
+            >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        )}
         <h2 className="text-3xl font-bold text-center text-text-primary mb-2">
-            {isSignUp ? 'Create Your Account' : 'Welcome Back'}
+            {isDownloadPrompt ? (isSignUp ? 'Love what you made?' : 'Welcome Back') : (isSignUp ? 'Create Your Account' : 'Welcome Back')}
         </h2>
         <p className="text-text-secondary text-center mb-6">
-            Please sign up or log in with Google or your email address to continue.
+            {isDownloadPrompt ? 
+                (isSignUp ? 'Create a free account to download it. Your project will be saved to your account once you sign up.' : 'Log in to download your creation.') : 
+                'Please sign up or log in with Google or your email address to continue.'}
         </p>
 
         {error && <div className="bg-red-500/10 border border-red-500/50 text-red-500 p-3 rounded-lg mb-6 text-sm">{error}</div>}

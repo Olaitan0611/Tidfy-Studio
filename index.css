@@ -4,56 +4,58 @@
 
 /* Define color variables for light and dark themes */
 :root { /* Light Theme */
-  --color-primary: #D946EF;
-  --color-secondary: #06B6D4;
-  --color-secondary-hover: #0891B2;
-  --color-accent: #F59E0B;
-  --color-highlight: #F472B6;
+  --color-primary: #C1502E; /* Terracotta */
+  --color-secondary: #E8B94A; /* Gold */
+  --color-secondary-hover: #D89A2E; /* Deep Ochre */
+  --color-accent: #A63B2E; /* Kente Red */
+  --color-highlight: #2C3E66; /* Indigo */
 
-  --color-background: #F9FAFB;
+  --color-background: #F5EFE3; /* Ivory Background */
   --color-surface: #FFFFFF;
-  --color-surface-input: #F3F4F6;
-  --color-border: #E5E7EB;
+  --color-surface-input: #EFE8DA;
+  --color-border: #D1C9B9;
 
-  --color-text-primary: #111827;
-  --color-text-secondary: #6B7280;
-  --color-text-tertiary: #9CA3AF;
+  --color-text-primary: #2C3E66; /* Indigo */
+  --color-text-secondary: #2F5233; /* Forest Green */
+  --color-text-tertiary: #5E697F;
   --color-text-on-primary: #FFFFFF;
-  --color-text-on-secondary: #FFFFFF;
+  --color-text-on-secondary: #111827;
 }
 
 .dark { /* Dark Theme */
-  --color-primary: #D946EF;
-  --color-secondary: #06B6D4;
-  --color-secondary-hover: #0891B2;
-  --color-accent: #F59E0B;
-  --color-highlight: #F472B6;
+  --color-primary: #C1502E;
+  --color-secondary: #E8B94A;
+  --color-secondary-hover: #D89A2E;
+  --color-accent: #A63B2E;
+  --color-highlight: #F5EFE3;
   
-  --color-background: #030712;
-  --color-surface: #111827;
-  --color-surface-input: #1F2937;
-  --color-border: #374151;
+  --color-background: #1C1F2B;
+  --color-surface: #262B3A;
+  --color-surface-input: #31384A;
+  --color-border: #4A546D;
 
-  --color-text-primary: #F3F4F6;
-  --color-text-secondary: #9CA3AF;
-  --color-text-tertiary: #4B5563;
+  --color-text-primary: #F5EFE3;
+  --color-text-secondary: #B6C2D6;
+  --color-text-tertiary: #7D8CA8;
   --color-text-on-primary: #FFFFFF;
-  --color-text-on-secondary: #FFFFFF;
+  --color-text-on-secondary: #111827;
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap');
+
 body {
+  font-family: 'DM Sans', sans-serif;
   background-color: var(--color-background);
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2V0h2v20h2v2H20v-1.5zM0 20h2v20H0V20zm4 0h2v20H4V20zm4 0h2v20H8V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2z' fill='%23C1502E' fill-opacity='0.03' fill-rule='evenodd'/%3E");
+}
+
+h1, h2, h3, h4, h5, h6, .font-heading {
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: -0.01em;
 }
 
 .dark body {
-  background-image:
-    radial-gradient(at 27% 37%, hsla(320, 98%, 61%, 0.1) 0px, transparent 50%),
-    radial-gradient(at 97% 21%, hsla(180, 98%, 61%, 0.1) 0px, transparent 50%),
-    radial-gradient(at 52% 99%, hsla(355, 98%, 76%, 0.15) 0px, transparent 50%),
-    radial-gradient(at 10% 29%, hsla(260, 96%, 68%, 0.1) 0px, transparent 50%),
-    radial-gradient(at 97% 96%, hsla(38, 60%, 74%, 0.1) 0px, transparent 50%),
-    radial-gradient(at 33% 50%, hsla(200, 67%, 73%, 0.1) 0px, transparent 50%),
-    radial-gradient(at 79% 53%, hsla(343, 68%, 79%, 0.1) 0px, transparent 50%);
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2V0h2v20h2v2H20v-1.5zM0 20h2v20H0V20zm4 0h2v20H4V20zm4 0h2v20H8V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2z' fill='%23E8B94A' fill-opacity='0.03' fill-rule='evenodd'/%3E");
 }
 
 @keyframes zoomInFromCenter {
@@ -110,6 +112,43 @@ body {
     transform: scale(1);
     filter: drop-shadow(0 0 40px hsla(222, 67%, 73%, 0.2));
   }
+}
+
+@keyframes indigoRipple {
+  0% {
+    transform: scale(0.5);
+    opacity: 1;
+    border-color: rgba(255, 255, 255, 0.8);
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+    border-color: rgba(255, 255, 255, 0);
+  }
+}
+
+.animate-indigo-ripple {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  margin-right: 12px;
+  display: inline-block;
+}
+
+.animate-indigo-ripple::before, .animate-indigo-ripple::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  border: 2px solid #FFFFFF;
+  animation: indigoRipple 1.5s cubic-bezier(0.165, 0.84, 0.44, 1) infinite;
+}
+
+.animate-indigo-ripple::after {
+  animation-delay: 0.75s;
 }
 
 .animate-zoomInFromCenter {

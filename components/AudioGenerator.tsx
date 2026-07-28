@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import Spinner from './Spinner';
 import { generateAudio } from '../services/geminiService';
 import { decode, decodeAudioData } from '../utils/audio';
-import { SparklesIcon, ExclamationTriangleIcon, PlayIcon, PauseIcon, ArrowPathIcon, TrashIcon, SpeakerWaveIcon, CloudArrowUpIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
+import { SparklesIcon, ExclamationTriangleIcon, PlayIcon, PauseIcon, ArrowPathIcon, TrashIcon, SpeakerWaveIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
+import { WovenBasketUploadIcon } from './CustomIcons';
 import { AudioVoice, AUDIO_VOICES } from '../types';
 
 interface AudioHistoryItem {
@@ -292,7 +293,7 @@ const AudioGenerator: React.FC = () => {
                     <div className="p-4 bg-surface-input/50 rounded-lg border-2 border-dashed border-border transition-all duration-300">
                         {!isVoiceCloned && !isCloning && (
                             <div className="text-center">
-                                <CloudArrowUpIcon className="w-10 h-10 mx-auto text-text-secondary mb-2" />
+                                <WovenBasketUploadIcon className="w-10 h-10 mx-auto text-text-secondary mb-2" />
                                 <h4 className="font-semibold text-text-primary">Upload Audio Sample</h4>
                                 <p className="text-xs text-text-tertiary mb-4">WAV or MP3, max 1 minute, clear voice.</p>
                                 <input type="file" ref={fileInputRef} onChange={handleFileSelect} hidden accept="audio/wav, audio/mpeg" />

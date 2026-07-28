@@ -1,14 +1,16 @@
 import React from 'react';
 import Logo from './Logo';
-import { Cog6ToothIcon, WifiIcon, SignalSlashIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
+import { WifiIcon, SignalSlashIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
+import { KenteCogIcon } from './CustomIcons';
 import { auth, signOut } from '../firebase';
 
 interface HeaderProps {
   onSettingsClick: () => void;
+  onLoginClick?: () => void;
   isOnline: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ onSettingsClick, isOnline }) => {
+const Header: React.FC<HeaderProps> = ({ onSettingsClick, onLoginClick, isOnline }) => {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
@@ -38,9 +40,9 @@ const Header: React.FC<HeaderProps> = ({ onSettingsClick, isOnline }) => {
                 className="p-2 rounded-full text-text-secondary hover:text-text-primary hover:bg-surface-input transition-colors"
                 aria-label="Open settings"
             >
-                <Cog6ToothIcon className="h-6 w-6" />
+                <KenteCogIcon className="h-6 w-6" />
             </button>
-            {auth.currentUser && (
+            {auth.currentUser ? (
               <button
                   onClick={handleSignOut}
                   className="p-2 rounded-full text-text-secondary hover:text-red-400 hover:bg-surface-input transition-colors"
@@ -48,6 +50,13 @@ const Header: React.FC<HeaderProps> = ({ onSettingsClick, isOnline }) => {
                   title="Sign out"
               >
                   <ArrowRightOnRectangleIcon className="h-6 w-6" />
+              </button>
+            ) : (
+              <button
+                  onClick={onLoginClick}
+                  className="px-4 py-2 rounded-lg bg-secondary text-white font-medium hover:bg-secondary-hover transition-colors text-sm"
+              >
+                  Log In / Sign Up
               </button>
             )}
         </div>

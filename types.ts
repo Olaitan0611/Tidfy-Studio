@@ -16,6 +16,7 @@ export enum Tab {
   SCRIPT = 'script',
   MUSIC = 'music',
   AFRICAN_SONG = 'african_song',
+  AFRICAN_FASHION = 'african_fashion',
   NETWORK = 'network',
   GROWTH = 'growth',
   LIBRARY = 'library',

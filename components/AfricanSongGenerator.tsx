@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { generateAfricanSongSample } from '../services/geminiService';
-import { PlayIcon, LockClosedIcon, CheckCircleIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { PlayIcon, CheckCircleIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { CalabashDownloadIcon } from './CustomIcons';
 
 const AFRICAN_COUNTRIES = {
   "Nigeria": ["Yoruba", "Igbo", "Hausa", "Pidgin English", "Edo", "Tiv"],
@@ -17,7 +18,33 @@ const AFRICAN_COUNTRIES = {
 
 const MUSIC_STYLES = ["Afrobeats", "Amapiano", "Hip-hop", "Highlife", "Gospel", "Chill"];
 
-const AfricanSongGenerator: React.FC = () => {
+const PREMADE_SONG_EXAMPLES = [
+    {
+        title: "Lagos Nights",
+        style: "Afrobeats",
+        country: "Nigeria",
+        audioSrc: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+    },
+    {
+        title: "Jozi Groove",
+        style: "Amapiano",
+        country: "South Africa",
+        audioSrc: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"
+    },
+    {
+        title: "Nairobi Breeze",
+        style: "Chill",
+        country: "Kenya",
+        audioSrc: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"
+    }
+];
+
+interface AfricanSongGeneratorProps {
+    isAuthenticated?: boolean;
+    onRequestLogin?: () => void;
+}
+
+const AfricanSongGenerator: React.FC<AfricanSongGeneratorProps> = ({ isAuthenticated = false, onRequestLogin }) => {
     const [lyrics, setLyrics] = useState('');
     const [country, setCountry] = useState(Object.keys(AFRICAN_COUNTRIES)[0]);
     const [language, setLanguage] = useState(AFRICAN_COUNTRIES[Object.keys(AFRICAN_COUNTRIES)[0] as keyof typeof AFRICAN_COUNTRIES][0]);
@@ -26,9 +53,6 @@ const AfricanSongGenerator: React.FC = () => {
     const [error, setError] = useState('');
     
     const [samples, setSamples] = useState<string[]>([]);
-    
-    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-    const [isSubscribed, setIsSubscribed] = useState(false);
 
     // Update languages when country changes
     useEffect(() => {
@@ -67,8 +91,8 @@ const AfricanSongGenerator: React.FC = () => {
     };
 
     const handleDownloadClick = () => {
-        if (!isSubscribed) {
-            setShowUpgradeModal(true);
+        if (!isAuthenticated) {
+            if (onRequestLogin) onRequestLogin();
         } else {
             alert("Downloading full-quality track... (Simulated)");
         }
@@ -76,6 +100,25 @@ const AfricanSongGenerator: React.FC = () => {
 
     return (
         <div className="animate-fadeInUp max-w-4xl mx-auto space-y-8">
+            <div className="bg-surface border border-border rounded-xl p-6 shadow-sm mb-8">
+                <h3 className="text-xl font-bold text-text-primary mb-4">Inspiration Showcase</h3>
+                <p className="text-sm text-text-secondary mb-4">Listen to what others have created (Examples)</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {PREMADE_SONG_EXAMPLES.map((ex, idx) => (
+                        <div key={idx} className="bg-surface-input border border-border rounded-xl p-4 flex flex-col items-center text-center space-y-3 shadow-sm hover:border-secondary transition-colors">
+                            <div className="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center">
+                                <PlayIcon className="h-6 w-6 text-secondary" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-text-primary text-sm">{ex.title}</h4>
+                                <p className="text-xs text-text-tertiary">{ex.style} • {ex.country}</p>
+                            </div>
+                            <audio controls src={ex.audioSrc} className="w-full h-8" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+
             <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
                 <h3 className="text-xl font-bold text-text-primary mb-6">Create Your African Song</h3>
                 
@@ -149,10 +192,7 @@ const AfricanSongGenerator: React.FC = () => {
                     >
                         {loading ? (
                             <>
-                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
+                                <span className="animate-indigo-ripple"></span>
                                 <span>Creating your song samples...</span>
                             </>
                         ) : (
@@ -184,84 +224,25 @@ const AfricanSongGenerator: React.FC = () => {
                                 <button
                                     onClick={handleDownloadClick}
                                     className={`w-full mt-6 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium transition-colors ${
-                                        isSubscribed 
+                                        isAuthenticated 
                                         ? 'bg-green-600 hover:bg-green-700 text-white'
                                         : 'bg-surface-input border border-border text-text-secondary hover:text-text-primary'
                                     }`}
                                 >
-                                    {isSubscribed ? (
-                                        <span>Download Full Track</span>
+                                    {isAuthenticated ? (
+                                        <>
+                                            <CalabashDownloadIcon className="h-5 w-5" />
+                                            <span>Download Full Track</span>
+                                        </>
                                     ) : (
                                         <>
-                                            <LockClosedIcon className="h-5 w-5" />
+                                            <CalabashDownloadIcon className="h-5 w-5" />
                                             <span>Download Full Track</span>
                                         </>
                                     )}
                                 </button>
                             </div>
                         ))}
-                    </div>
-                </div>
-            )}
-
-            {/* Upgrade Modal */}
-            {showUpgradeModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-surface border border-border rounded-2xl shadow-2xl w-full max-w-lg p-8 animate-slideUpFadeIn relative">
-                        <button 
-                            onClick={() => setShowUpgradeModal(false)}
-                            className="absolute top-4 right-4 text-text-tertiary hover:text-text-primary"
-                        >
-                            <XMarkIcon className="h-6 w-6" />
-                        </button>
-                        
-                        <div className="text-center mb-8">
-                            <div className="mx-auto w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center mb-4">
-                                <LockClosedIcon className="h-8 w-8 text-accent" />
-                            </div>
-                            <h2 className="text-2xl font-bold text-text-primary mb-2">Unlock Full-Quality Downloads</h2>
-                            <p className="text-text-secondary">
-                                Subscribe to access unwatermarked, full-length audio files generated from your lyrics.
-                            </p>
-                        </div>
-
-                        <div className="bg-surface-input rounded-xl p-6 border border-secondary/30 mb-8">
-                            <div className="flex justify-between items-center border-b border-border pb-4 mb-4">
-                                <div>
-                                    <h3 className="font-bold text-lg text-text-primary">Pro Creator Plan</h3>
-                                    <p className="text-sm text-text-tertiary">Unlimited full track downloads</p>
-                                </div>
-                                <div className="text-right">
-                                    <span className="text-2xl font-bold text-text-primary">$9.99</span>
-                                    <span className="text-sm text-text-tertiary">/mo</span>
-                                </div>
-                            </div>
-                            
-                            <ul className="space-y-3">
-                                <li className="flex items-center text-sm text-text-secondary">
-                                    <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
-                                    Full 3-minute song generations
-                                </li>
-                                <li className="flex items-center text-sm text-text-secondary">
-                                    <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
-                                    High-fidelity WAV uncompressed audio
-                                </li>
-                                <li className="flex items-center text-sm text-text-secondary">
-                                    <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
-                                    Commercial usage rights
-                                </li>
-                            </ul>
-                        </div>
-
-                        <button
-                            onClick={() => {
-                                setIsSubscribed(true);
-                                setShowUpgradeModal(false);
-                            }}
-                            className="w-full bg-secondary hover:bg-secondary-hover text-white font-bold py-4 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg"
-                        >
-                            Subscribe to Unlock (Simulated)
-                        </button>
                     </div>
                 </div>
             )}
