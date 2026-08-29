@@ -1,4 +1,4 @@
-name = "tidfy-worker"
+name = "tidfy-studio"
 main = "worker/index.ts"
 compatibility_date = "2024-01-01"
 
